@@ -58,8 +58,20 @@ module.exports = {
   },
   theme: {
     extend: {
+      fontFamily: {
+        chivo: ["Chivo Mono", "monospace"],
+      },
+      backgroundColor: {
+        skin: "#EBECFD",
+      },
       boxShadow: { center: "0 0 12px -2px rgb(0 0 0 / 0.05)" },
-      animation: { "pulse-fast": "pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite" },
+      animation: {
+        "pulse-fast": "pulse 1.5s cubic-bezier(.57,.21,.69,1.25) infinite",
+        "animate-ping": "ping 1s ease-in-out infinite",
+      },
+      screens: {
+        lg: "1145px",
+      },
     },
   },
 };

@@ -1,13 +1,19 @@
+@import url("https://fonts.googleapis.com/css2?family=Chivo+Mono:ital,wght@0,100..900;1,100..900&display=swap");
+
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
 :root,
 [data-theme] {
-  background: oklch(var(--b2));
+  background: #dddddd;
+  margin-bottom: 40px;
 }
 
 body {
+  @apply font-chivo;
+  @apply text-base;
+  @apply tracking-tight;
   min-height: 100vh;
 }
 

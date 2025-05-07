@@ -1,71 +1,71 @@
 "use client";
 
-import Link from "next/link";
-import type { NextPage } from "next";
-import { useAccount } from "wagmi";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { Address } from "~~/components/scaffold-eth";
+import { useState } from "react";
+import Image from "next/image";
+import { NextPage } from "next";
+import bgrpcLogo from "~~/public/bgrpc.png";
 
 const Home: NextPage = () => {
-  const { address: connectedAddress } = useAccount();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <>
-      <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
-          </h1>
-          <div className="flex justify-center items-center space-x-2 flex-col">
-            <p className="my-2 font-medium">Connected Address:</p>
-            <Address address={connectedAddress} />
-          </div>
-
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/nextjs/app/page.tsx
-            </code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              YourContract.sol
-            </code>{" "}
-            in{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/hardhat/contracts
-            </code>
-          </p>
+    <div className="container mx-auto">
+      {/* Header with fixed logo */}
+      <header className="container mx-auto pb-24 md:pb-32 lg:pb-36 border-l border-r border-black">
+        <div className="fixed container z-10 mix-blend-difference p-6 lg:p-8">
+          <Image className="w-40 md:w-auto invert" src={bgrpcLogo} alt="logo" width={260} height={78} />
         </div>
+      </header>
 
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col md:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
+      {/* First row */}
+      <div className="flex flex-col lg:flex-row lg:border-x-[1px] lg:border-y-[1px] border-black">
+        {/* Satellite section - now on the left */}
+        <section className="bg-[#20F658] p-6 w-full flex justify-center border-x-[1px] border-y-[1px] border-black lg:border-none lg:w-[55vw]">
+          <Image src="/satellite-10fps.gif" alt="satellite" className="object-contain" width={436} height={535} />
+        </section>
+
+        {/* Instructions section - now on the right */}
+        <section className="bg-[#20F658] p-6 lg:p-10 w-full lg:w-[45vw] border-x-[1px] border-y-[1px] border-black lg:border-none overflow-auto flex items-center justify-center">
+          <div className="flex flex-col">
+            <div className="mb-6 flex justify-center">
+              <Image src="crosses-1.svg" alt="crosses" className="w-[200px] lg:w-[400px]" width={306} height={50} />
             </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
+            <p className="mt-0">Power your decentralized apps with:</p>
+            <div className="bg-black p-2 lg:p-4 text-white text-sm overflow-auto">
+              <p className="m-2">https://mainnet.rpc.buidlguidl.com</p>
+            </div>
+            <div className="mt-6 flex justify-center">
+              <Image src="crosses-2.svg" alt="crosses" className="w-[200px] lg:w-[400px]" width={306} height={50} />
             </div>
           </div>
-        </div>
+        </section>
       </div>
-    </>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-85 z-50 flex items-center justify-center p-4"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh]">
+            <Image
+              src="/screenshot-3-modal.png"
+              alt="screenshot"
+              className="object-contain"
+              width={2030}
+              height={1327}
+              onClick={e => e.stopPropagation()}
+            />
+            <button
+              className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center"
+              onClick={() => setIsModalOpen(false)}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
