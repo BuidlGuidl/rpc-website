@@ -6,8 +6,7 @@
 
 :root,
 [data-theme] {
-  background: #dddddd;
-  margin-bottom: 40px;
+  background: #87A0F9;
 }
 
 body {
@@ -27,10 +26,6 @@ h4 {
 
 p {
   margin: 1rem 0;
-}
-
-.btn {
-  @apply shadow-md;
 }
 
 .btn.btn-ghost {

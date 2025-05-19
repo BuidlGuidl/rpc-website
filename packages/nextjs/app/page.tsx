@@ -1,70 +1,58 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { NextPage } from "next";
-import bgrpcLogo from "~~/public/bgrpc.png";
 
 const Home: NextPage = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
       {/* Header with fixed logo */}
-      <header className="container mx-auto pb-24 md:pb-32 lg:pb-36 border-l border-r border-black">
-        <div className="fixed container z-10 mix-blend-difference p-6 lg:p-8">
-          <Image className="w-40 md:w-auto invert" src={bgrpcLogo} alt="logo" width={260} height={78} />
+      <header className="container mx-auto md:pb-24 lg:pb-28 border-l border-r border-black md:mt-0">
+        <div className="fixed container mt-4 xs:mt-0 md:mt-0 z-10 md:p-6 lg:p-8">
+          <Image className="w-40" src="rpc-logo.svg" alt="logo" width={260} height={78} />
         </div>
       </header>
 
       {/* First row */}
-      <div className="flex flex-col lg:flex-row lg:border-x-[1px] lg:border-y-[1px] border-black">
-        {/* Satellite section - now on the left */}
-        <section className="bg-[#20F658] p-6 w-full flex justify-center border-x-[1px] border-y-[1px] border-black lg:border-none lg:w-[55vw]">
-          <Image src="/satellite-10fps.gif" alt="satellite" className="object-contain" width={436} height={535} />
-        </section>
-
-        {/* Instructions section - now on the right */}
-        <section className="bg-[#20F658] p-6 lg:p-10 w-full lg:w-[45vw] border-x-[1px] border-y-[1px] border-black lg:border-none overflow-auto flex items-center justify-center">
+      <div className="flex flex-col lg:flex-row lg:border-x-[1px] mt-20 md:mt-0 lg:border-y-[1px] border-black">
+        {/* Introduction section */}
+        <section className="bg-[#DDDDDD] p-6 lg:p-10 w-full lg:w-[60vw] border-x-[1px] border-y-[1px] border-black lg:border-none">
           <div className="flex flex-col">
-            <div className="mb-6 flex justify-center">
-              <Image src="crosses-1.svg" alt="crosses" className="w-[200px] lg:w-[400px]" width={306} height={50} />
-            </div>
+            <p className="mt-0">
+              A one line command to deploy and monitor an Ethereum Node, funded and maintained by BuidlGuidl members.
+            </p>
             <p className="mt-0">Power your decentralized apps with:</p>
-            <div className="bg-black p-2 lg:p-4 text-white text-sm overflow-auto">
+            <div className="bg-black p-2 lg:p-4 text-white text-sm">
               <p className="m-2">https://mainnet.rpc.buidlguidl.com</p>
             </div>
-            <div className="mt-6 flex justify-center">
-              <Image src="crosses-2.svg" alt="crosses" className="w-[200px] lg:w-[400px]" width={306} height={50} />
-            </div>
+            <p> Powered by worldwide BG Clients.</p>
           </div>
         </section>
-      </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-85 z-50 flex items-center justify-center p-4"
-          onClick={() => setIsModalOpen(false)}
-        >
-          <div className="relative max-w-[90vw] max-h-[90vh]">
+        {/* Second row for mobile - flex row to make sections share the row */}
+        <div className="flex flex-col flex-1">
+          {/* Satellite section */}
+          <section className="bg-[#20F658] p-6 flex justify-center items-center border-r-[1px] border-l-[1px] border-b-[1px] border-black lg:border-r-0 flex-1">
             <Image
-              src="/screenshot-3-modal.png"
-              alt="screenshot"
-              className="object-contain"
-              width={2030}
-              height={1327}
-              onClick={e => e.stopPropagation()}
+              src="/satellite-10fps.gif"
+              alt="satellite"
+              className="object-contain max-h-full"
+              width={436}
+              height={535}
             />
+          </section>
+
+          {/* Button section */}
+          <section className="bg-[#DDDDDD] flex justify-center border-x-[1px] border-b-[1px] border-black lg:border-b-0 lg:border-r-0">
             <button
-              className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center"
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => window.open("https://client.buidlguidl.com", "_blank", "noopener,noreferrer")}
+              className="bg-white h-16 w-full flex items-center justify-center hover:bg-[#FF66F9] transition-colors"
             >
-              ✕
+              <p>Visit Client site</p>
             </button>
-          </div>
+          </section>
         </div>
-      )}
+      </div>
     </div>
   );
 };
