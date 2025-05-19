@@ -6,14 +6,20 @@ import { HeartIcon } from "@heroicons/react/24/solid";
  */
 export const Footer = () => {
   return (
-    <div className="container mx-auto mb-6 lg:mb-6">
+    <div className="container mx-auto py-6">
       <div className="w-full flex flex-col gap-6 justify-center items-center lg:flex-row lg:gap-0">
         <div>
-          <Image src="crosses-1.svg" alt="crosses" className="w-[200px] lg:w-[500px]" width={306} height={50} />
+          <Image
+            src="crosses-1.svg"
+            alt="crosses"
+            className="hidden lg:block w-[200px] lg:w-[500px]"
+            width={306}
+            height={50}
+          />
         </div>
         <ul className="menu menu-horizontal w-full">
           {/* Footer links */}
-          <div className="flex flex-col md:flex-row justify-center items-center gap-2 text-sm w-full">
+          <div className="flex flex-col md:flex-row justify-center items-center md:gap-2 text-sm w-full">
             <div className="text-center">
               <a href="https://github.com/BuidlGuidl/rpc-website" target="_blank" rel="noreferrer" className="link">
                 Fork me
