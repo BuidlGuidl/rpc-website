@@ -24,7 +24,7 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
     <>
       <div className={`flex flex-col min-h-screen`}>
         {/* Fixed wallet connect button in the top right */}
-        <div className="fixed top-4 right-4 z-50 bg-base-100 p-2 rounded-lg shadow-md flex items-center gap-2">
+        <div className="fixed top-4 right-4 z-50 p-2 flex items-center gap-2">
           <RainbowKitCustomConnectButton />
           {isLocalNetwork && <FaucetButton />}
         </div>

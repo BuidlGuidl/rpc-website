@@ -7,14 +7,14 @@ const Home: NextPage = () => {
   return (
     <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
       {/* Header with fixed logo */}
-      <header className="container mx-auto md:pb-24 lg:pb-28 border-l border-r border-black">
-        <div className="fixed container z-10 p-6 lg:p-8">
+      <header className="container mx-auto md:pb-24 lg:pb-28 border-l border-r border-black md:mt-0">
+        <div className="fixed container mt-4 xs:mt-0 md:mt-0 z-10 md:p-6 lg:p-8">
           <Image className="w-40" src="rpc-logo.svg" alt="logo" width={260} height={78} />
         </div>
       </header>
 
       {/* First row */}
-      <div className="flex flex-col lg:flex-row lg:border-x-[1px] lg:border-y-[1px] border-black">
+      <div className="flex flex-col lg:flex-row lg:border-x-[1px] mt-20 md:mt-0 lg:border-y-[1px] border-black">
         {/* Introduction section */}
         <section className="bg-[#DDDDDD] p-6 lg:p-10 w-full lg:w-[60vw] border-x-[1px] border-y-[1px] border-black lg:border-none">
           <div className="flex flex-col">

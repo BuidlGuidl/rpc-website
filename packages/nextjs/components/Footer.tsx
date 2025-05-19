@@ -6,7 +6,7 @@ import { HeartIcon } from "@heroicons/react/24/solid";
  */
 export const Footer = () => {
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto px-8 py-6">
       <div className="w-full flex flex-col gap-6 justify-center items-center lg:flex-row lg:gap-0">
         <div>
           <Image
