@@ -18,7 +18,7 @@ const Home: NextPage = () => {
         {/* Introduction section */}
         <section className="bg-[#DDDDDD] p-6 lg:p-10 w-full lg:w-[60vw] border-x-[1px] border-y-[1px] border-black lg:border-none">
           <div className="flex flex-col">
-            <p className="mt-0">A distributed EthereumRPC operated by a network of BuidlGuidl clients.</p>
+            <p className="mt-0">A distributed Ethereum RPC operated by a network of BuidlGuidl clients.</p>
 
             <div className="bg-black p-2 lg:p-4 text-white text-sm">
               <p className="m-2">https://mainnet.rpc.buidlguidl.com</p>
