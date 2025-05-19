@@ -44,7 +44,10 @@ const Home: NextPage = () => {
 
           {/* Button section */}
           <section className="bg-[#DDDDDD] flex justify-center border-x-[1px] border-b-[1px] border-black lg:border-b-0 lg:border-r-0">
-            <button className="bg-white h-16 w-full flex items-center justify-center hover:bg-[#FF66F9] transition-colors">
+            <button
+              onClick={() => window.open("https://client.buidlguidl.com", "_blank", "noopener,noreferrer")}
+              className="bg-white h-16 w-full flex items-center justify-center hover:bg-[#FF66F9] transition-colors"
+            >
               <p>Visit Client site</p>
             </button>
           </section>
