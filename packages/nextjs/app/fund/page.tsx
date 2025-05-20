@@ -6,12 +6,15 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { NextPage } from "next";
 import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
-import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
+import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { db } from "~~/services/firebase";
 
 const Fund: NextPage = () => {
   const { address } = useAccount();
   const [selectedUrls, setSelectedUrls] = useState<string[]>([]);
+
+  const { data: rpcFunderContractData } = useDeployedContractInfo("RpcFunder");
+  const { writeContractAsync: writeUsdcAsync } = useScaffoldWriteContract("USDC");
 
   // Reduce polling frequency for contract reads
   const { data: yourTokenSymbol } = useScaffoldReadContract({
@@ -31,6 +34,12 @@ const Fund: NextPage = () => {
     contractName: "RpcFunder",
     functionName: "bankAddress",
     watch: false, // Disable automatic polling
+  });
+
+  const { data: allowance } = useScaffoldReadContract({
+    contractName: "USDC",
+    functionName: "allowance",
+    args: [address, rpcFunderContractData?.address],
   });
 
   // Load user's selected options from Firebase
@@ -118,6 +127,15 @@ const Fund: NextPage = () => {
       </header>
       <div className="flex items-center flex-col flex-grow pt-10">
         <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-24 w-full max-w-lg">
+          <div className="text-xl">
+            Your USDC Allowance Remaining:{" "}
+            <div className="inline-flex items-center justify-center">
+              {parseFloat(formatUnits(allowance ?? 0n, 6)).toFixed(6)}
+              <span className="font-bold ml-1">{yourTokenSymbol}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-24 w-full max-w-lg">
           <div>
             Your USDC Balance:{""}
             {Number(formatUnits(yourUsdcBalance ?? 0n, 6)).toFixed(6)}
@@ -165,6 +183,23 @@ const Fund: NextPage = () => {
             <button className="btn btn-primary w-full mt-6" onClick={handleSubmit}>
               Submit
             </button>
+            <div className="flex gap-4">
+              <button
+                className={`btn`}
+                onClick={async () => {
+                  try {
+                    await writeUsdcAsync({
+                      functionName: "approve",
+                      args: [rpcFunderContractData?.address, 1000000n],
+                    });
+                  } catch (err) {
+                    console.error("Error calling approve function:", err);
+                  }
+                }}
+              >
+                Approve 1 USDC
+              </button>
+            </div>
           </div>
         </div>
       </div>
