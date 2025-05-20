@@ -12,6 +12,7 @@ import { db } from "~~/services/firebase";
 const Fund: NextPage = () => {
   const { address } = useAccount();
   const [selectedUrls, setSelectedUrls] = useState<string[]>([]);
+  const [availableUrls, setAvailableUrls] = useState<string[]>([]);
 
   const { data: rpcFunderContractData } = useDeployedContractInfo("RpcFunder");
   const { writeContractAsync: writeUsdcAsync } = useScaffoldWriteContract("USDC");
@@ -30,11 +31,11 @@ const Fund: NextPage = () => {
     watch: false, // Disable automatic polling
   });
 
-  const { data: bankAddress } = useScaffoldReadContract({
-    contractName: "RpcFunder",
-    functionName: "bankAddress",
-    watch: false, // Disable automatic polling
-  });
+  // const { data: bankAddress } = useScaffoldReadContract({
+  //   contractName: "RpcFunder",
+  //   functionName: "bankAddress",
+  //   watch: false, // Disable automatic polling
+  // });
 
   const { data: allowance } = useScaffoldReadContract({
     contractName: "USDC",
@@ -71,6 +72,32 @@ const Fund: NextPage = () => {
 
     loadUserData();
   }, [address]);
+
+  // Load available URLs from Firebase
+  useEffect(() => {
+    const loadAvailableUrls = async () => {
+      try {
+        const docRef = doc(db, "urlList", "urlList");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setAvailableUrls(data.urls || []);
+        } else {
+          console.log("No URL list found");
+          setAvailableUrls([]);
+        }
+      } catch (e) {
+        console.error("Error loading URL list:", e);
+        if (e instanceof Error) {
+          console.error("Error name:", e.name);
+          console.error("Error message:", e.message);
+        }
+      }
+    };
+
+    loadAvailableUrls();
+  }, []);
 
   const handleCheckboxChange = (testName: string) => {
     setSelectedUrls(prev => (prev.includes(testName) ? prev.filter(test => test !== testName) : [...prev, testName]));
@@ -126,6 +153,19 @@ const Fund: NextPage = () => {
         </div>
       </header>
       <div className="flex items-center flex-col flex-grow pt-10">
+        {/* <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-24 w-full max-w-lg">
+          <div>
+            Bank Address:{""}
+            {bankAddress}
+          </div>
+        </div> */}
+        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-24 w-full max-w-lg">
+          <div>
+            Your USDC Balance:{""}
+            {Number(formatUnits(yourUsdcBalance ?? 0n, 6)).toFixed(6)}
+            <span className="font-bold ml-1">{yourTokenSymbol}</span>
+          </div>
+        </div>
         <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-24 w-full max-w-lg">
           <div className="text-xl">
             Your USDC Allowance Remaining:{" "}
@@ -136,49 +176,19 @@ const Fund: NextPage = () => {
           </div>
         </div>
         <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-24 w-full max-w-lg">
-          <div>
-            Your USDC Balance:{""}
-            {Number(formatUnits(yourUsdcBalance ?? 0n, 6)).toFixed(6)}
-            <span className="font-bold ml-1">{yourTokenSymbol}</span>
-          </div>
-        </div>
-        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-24 w-full max-w-lg">
-          <div>
-            Bank Address:{""}
-            {bankAddress}
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-24 w-full max-w-lg">
           <div className="w-full">
             <div className="space-y-4">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="checkbox checkbox-primary"
-                  checked={selectedUrls.includes("Test 1")}
-                  onChange={() => handleCheckboxChange("Test 1")}
-                />
-                <span className="ml-2">Test 1</span>
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="checkbox checkbox-primary"
-                  checked={selectedUrls.includes("Test 2")}
-                  onChange={() => handleCheckboxChange("Test 2")}
-                />
-                <span className="ml-2">Test 2</span>
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="checkbox checkbox-primary"
-                  checked={selectedUrls.includes("Test 3")}
-                  onChange={() => handleCheckboxChange("Test 3")}
-                />
-                <span className="ml-2">Test 3</span>
-              </div>
+              {availableUrls.map(url => (
+                <div key={url} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-primary"
+                    checked={selectedUrls.includes(url)}
+                    onChange={() => handleCheckboxChange(url)}
+                  />
+                  <span className="ml-2">{url}</span>
+                </div>
+              ))}
             </div>
             <button className="btn btn-primary w-full mt-6" onClick={handleSubmit}>
               Submit
