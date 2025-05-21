@@ -14,6 +14,8 @@ const Fund: NextPage = () => {
   const [selectedUrls, setSelectedUrls] = useState<string[]>([]);
   const [searchInput, setSearchInput] = useState("");
   const [displayUrls, setDisplayUrls] = useState<{ url: string; owner: string }[]>([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const { data: rpcFunderContractData } = useDeployedContractInfo("RpcFunder");
   const { writeContractAsync: writeUsdcAsync } = useScaffoldWriteContract("USDC");
@@ -126,6 +128,25 @@ const Fund: NextPage = () => {
         // Update the entire document with the new data
         await setDoc(docRef, newData, { merge: true });
         console.log("Successfully updated URL owners in Firebase");
+
+        // Show success message
+        const claimedCount = selectedUrls.length;
+        const unclaimedCount = Object.entries(data).filter(([url, urlData]) => {
+          const urlInfo = urlData as { owner: string };
+          return urlInfo.owner === address && !selectedUrls.includes(url);
+        }).length;
+
+        let message = "";
+        if (claimedCount > 0 && unclaimedCount > 0) {
+          message = `Successfully claimed ${claimedCount} URL${claimedCount > 1 ? "s" : ""} and unclaimed ${unclaimedCount} URL${unclaimedCount > 1 ? "s" : ""}`;
+        } else if (claimedCount > 0) {
+          message = `Successfully claimed ${claimedCount} URL${claimedCount > 1 ? "s" : ""}`;
+        } else if (unclaimedCount > 0) {
+          message = `Successfully unclaimed ${unclaimedCount} URL${unclaimedCount > 1 ? "s" : ""}`;
+        }
+
+        setSuccessMessage(message);
+        setShowSuccessModal(true);
       }
     } catch (e) {
       console.error("Error updating URL owners:", e);
@@ -138,6 +159,19 @@ const Fund: NextPage = () => {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-base-100 p-6 rounded-xl shadow-lg max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold mb-4">Success</h3>
+            <p className="mb-6">{successMessage}</p>
+            <button className="btn btn-primary w-full" onClick={() => setShowSuccessModal(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header with fixed logo */}
       <header className="container mx-auto md:pb-24 lg:pb-28 border-l border-r border-black md:mt-0">
         <div className="fixed container mt-4 xs:mt-0 md:mt-0 z-10 md:p-6 lg:p-8">
@@ -178,12 +212,12 @@ const Fund: NextPage = () => {
             </button>
           </div>
         </div>
-        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
+        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg min-h-[600px] relative">
           <div className="w-full">
             <div className="mb-4">
               <input
                 type="text"
-                placeholder="Search Unclaimed URLs..."
+                placeholder="Search URLs..."
                 className="input input-bordered w-full"
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
@@ -204,7 +238,10 @@ const Fund: NextPage = () => {
                   </div>
                 ))}
             </div>
-            <button className="btn btn-primary w-full mt-6" onClick={handleSubmit}>
+            <button
+              className="btn btn-primary w-[300px] mt-6 absolute bottom-6 left-1/2 -translate-x-1/2"
+              onClick={handleSubmit}
+            >
               Claim URLs
             </button>
           </div>
