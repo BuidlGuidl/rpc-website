@@ -46,11 +46,15 @@ const Fund: NextPage = () => {
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          // Convert object to array of {url, owner} objects
-          const urlsWithOwners = Object.entries(data).map(([url, urlData]) => ({
-            url,
-            owner: (urlData as { owner: string }).owner,
-          }));
+          // Convert object to array of {url, owner} objects, filter out timestamp and claimed URLs
+          const urlsWithOwners = Object.entries(data)
+            .filter(([key]) => key !== "timestamp") // Filter out timestamp
+            .map(([url, urlData]) => ({
+              url,
+              owner: (urlData as { owner: string }).owner,
+            }))
+            .filter(item => !item.owner || String(item.owner).toLowerCase() === String(address)?.toLowerCase()) // Only show unclaimed or user's URLs
+            .sort((a, b) => a.url.localeCompare(b.url)); // Sort alphabetically
           setAvailableUrls(urlsWithOwners);
 
           // Set selected URLs based on owner
@@ -145,11 +149,28 @@ const Fund: NextPage = () => {
               <span className="font-bold ml-1">{yourTokenSymbol}</span>
             </div>
           </div>
+          <div className="flex gap-4">
+            <button
+              className={`btn btn-primary w-full mt-6`}
+              onClick={async () => {
+                try {
+                  await writeUsdcAsync({
+                    functionName: "approve",
+                    args: [rpcFunderContractData?.address, 1000000n],
+                  });
+                } catch (err) {
+                  console.error("Error calling approve function:", err);
+                }
+              }}
+            >
+              Approve 1 USDC For Requests
+            </button>
+          </div>
         </div>
         <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-24 w-full max-w-lg">
           <div className="w-full">
             <div className="space-y-4">
-              {availableUrls.map(({ url, owner }) => (
+              {availableUrls.map(({ url }) => (
                 <div key={url} className="flex items-center">
                   <input
                     type="checkbox"
@@ -158,30 +179,12 @@ const Fund: NextPage = () => {
                     onChange={() => handleCheckboxChange(url)}
                   />
                   <span className="ml-2">{url}</span>
-                  <span className="ml-2 text-sm text-gray-500">(Owner: {owner})</span>
                 </div>
               ))}
             </div>
             <button className="btn btn-primary w-full mt-6" onClick={handleSubmit}>
-              Submit
+              Claim URLs for Requests
             </button>
-            <div className="flex gap-4">
-              <button
-                className={`btn`}
-                onClick={async () => {
-                  try {
-                    await writeUsdcAsync({
-                      functionName: "approve",
-                      args: [rpcFunderContractData?.address, 1000000n],
-                    });
-                  } catch (err) {
-                    console.error("Error calling approve function:", err);
-                  }
-                }}
-              >
-                Approve 1 USDC
-              </button>
-            </div>
           </div>
         </div>
       </div>
