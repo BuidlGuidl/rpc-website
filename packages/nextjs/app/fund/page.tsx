@@ -44,7 +44,7 @@ const Fund: NextPage = () => {
   useEffect(() => {
     const loadAvailableUrls = async () => {
       try {
-        const docRef = doc(db, "urlList", "urlList");
+        const docRef = doc(db, "stage", "urlList");
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -105,7 +105,7 @@ const Fund: NextPage = () => {
     }
 
     try {
-      const docRef = doc(db, "urlList", "urlList");
+      const docRef = doc(db, "stage", "urlList");
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
@@ -238,10 +238,7 @@ const Fund: NextPage = () => {
                   </div>
                 ))}
             </div>
-            <button
-              className="btn btn-primary w-[300px] mt-6 absolute bottom-6 left-1/2 -translate-x-1/2"
-              onClick={handleSubmit}
-            >
+            <button className="btn btn-primary w-[300px] mt-6 absolute bottom-6" onClick={handleSubmit}>
               Claim URLs
             </button>
           </div>
