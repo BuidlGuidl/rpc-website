@@ -12,7 +12,8 @@ import { db } from "~~/services/firebase";
 const Fund: NextPage = () => {
   const { address } = useAccount();
   const [selectedUrls, setSelectedUrls] = useState<string[]>([]);
-  const [availableUrls, setAvailableUrls] = useState<{ url: string; owner: string }[]>([]);
+  const [searchInput, setSearchInput] = useState("");
+  const [displayUrls, setDisplayUrls] = useState<{ url: string; owner: string }[]>([]);
 
   const { data: rpcFunderContractData } = useDeployedContractInfo("RpcFunder");
   const { writeContractAsync: writeUsdcAsync } = useScaffoldWriteContract("USDC");
@@ -55,7 +56,7 @@ const Fund: NextPage = () => {
             }))
             .filter(item => !item.owner || String(item.owner).toLowerCase() === String(address)?.toLowerCase()) // Only show unclaimed or user's URLs
             .sort((a, b) => a.url.localeCompare(b.url)); // Sort alphabetically
-          setAvailableUrls(urlsWithOwners);
+          setDisplayUrls(urlsWithOwners);
 
           // Set selected URLs based on owner
           if (address) {
@@ -63,11 +64,21 @@ const Fund: NextPage = () => {
               .filter(item => String(item.owner).toLowerCase() === String(address).toLowerCase())
               .map(item => item.url);
             setSelectedUrls(userSelectedUrls);
+
+            // Sort URLs with selected ones at the top
+            const sortedUrls = [...urlsWithOwners].sort((a, b) => {
+              const aSelected = userSelectedUrls.includes(a.url);
+              const bSelected = userSelectedUrls.includes(b.url);
+              if (aSelected && !bSelected) return -1;
+              if (!aSelected && bSelected) return 1;
+              return a.url.localeCompare(b.url);
+            });
+            setDisplayUrls(sortedUrls);
           }
         } else {
           console.log("No URL list found");
-          setAvailableUrls([]);
           setSelectedUrls([]);
+          setDisplayUrls([]);
         }
       } catch (e) {
         console.error("Error loading URL list:", e);
@@ -134,14 +145,14 @@ const Fund: NextPage = () => {
         </div>
       </header>
       <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-24 w-full max-w-lg">
+        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
           <div>
             Your USDC Balance:{""}
             {Number(formatUnits(yourUsdcBalance ?? 0n, 6)).toFixed(6)}
             <span className="font-bold ml-1">{yourTokenSymbol}</span>
           </div>
         </div>
-        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-24 w-full max-w-lg">
+        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
           <div className="text-xl">
             Your USDC Allowance Remaining:{" "}
             <div className="inline-flex items-center justify-center">
@@ -167,23 +178,34 @@ const Fund: NextPage = () => {
             </button>
           </div>
         </div>
-        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-24 w-full max-w-lg">
+        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
           <div className="w-full">
-            <div className="space-y-4">
-              {availableUrls.map(({ url }) => (
-                <div key={url} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="checkbox checkbox-primary"
-                    checked={selectedUrls.includes(url)}
-                    onChange={() => handleCheckboxChange(url)}
-                  />
-                  <span className="ml-2">{url}</span>
-                </div>
-              ))}
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search Unclaimed URLs..."
+                className="input input-bordered w-full"
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+              />
+            </div>
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+              {displayUrls
+                .filter(({ url }) => url.toLowerCase().startsWith(searchInput.toLowerCase()))
+                .map(({ url }) => (
+                  <div key={url} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-primary"
+                      checked={selectedUrls.includes(url)}
+                      onChange={() => handleCheckboxChange(url)}
+                    />
+                    <span className="ml-2">{url}</span>
+                  </div>
+                ))}
             </div>
             <button className="btn btn-primary w-full mt-6" onClick={handleSubmit}>
-              Claim URLs for Requests
+              Claim URLs
             </button>
           </div>
         </div>
