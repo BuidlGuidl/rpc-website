@@ -238,9 +238,11 @@ const Fund: NextPage = () => {
                   </div>
                 ))}
             </div>
-            <button className="btn btn-primary w-[300px] mt-6 absolute bottom-6" onClick={handleSubmit}>
-              Claim URLs
-            </button>
+            <div className="w-full flex justify-center">
+              <button className="btn btn-primary w-[300px] mt-6 absolute bottom-6" onClick={handleSubmit}>
+                Claim URLs
+              </button>
+            </div>
           </div>
         </div>
       </div>
