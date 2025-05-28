@@ -16,6 +16,9 @@ const Fund: NextPage = () => {
   const [displayUrls, setDisplayUrls] = useState<{ url: string; owner: string }[]>([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [totalRequestsFunded, setTotalRequestsFunded] = useState(0);
+
+  const firebaseCollection = process.env.NEXT_PUBLIC_FIREBASE_COLLECTION || "stage";
 
   const { data: rpcFunderContractData } = useDeployedContractInfo("RpcFunder");
   const { writeContractAsync: writeUsdcAsync } = useScaffoldWriteContract("USDC");
@@ -27,12 +30,12 @@ const Fund: NextPage = () => {
     watch: false, // Disable automatic polling
   });
 
-  const { data: yourUsdcBalance } = useScaffoldReadContract({
-    contractName: "USDC",
-    functionName: "balanceOf",
-    args: [address],
-    watch: false, // Disable automatic polling
-  });
+  // const { data: yourUsdcBalance } = useScaffoldReadContract({
+  //   contractName: "USDC",
+  //   functionName: "balanceOf",
+  //   args: [address],
+  //   watch: false, // Disable automatic polling
+  // });
 
   const { data: allowance } = useScaffoldReadContract({
     contractName: "USDC",
@@ -44,7 +47,7 @@ const Fund: NextPage = () => {
   useEffect(() => {
     const loadAvailableUrls = async () => {
       try {
-        const docRef = doc(db, "stage", "urlList");
+        const docRef = doc(db, firebaseCollection, "urlList");
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -76,6 +79,17 @@ const Fund: NextPage = () => {
               return a.url.localeCompare(b.url);
             });
             setDisplayUrls(sortedUrls);
+
+            // Fetch total requests funded
+            const userRequestCountRef = doc(db, firebaseCollection, "userRequestCount");
+            const userRequestCountSnap = await getDoc(userRequestCountRef);
+            if (userRequestCountSnap.exists()) {
+              const userData = userRequestCountSnap.data();
+              const userCount = userData[address]?.totalRequests || 0;
+              setTotalRequestsFunded(userCount);
+            } else {
+              console.log("No request count document found in stage collection");
+            }
           }
         } else {
           console.log("No URL list found");
@@ -105,7 +119,7 @@ const Fund: NextPage = () => {
     }
 
     try {
-      const docRef = doc(db, "stage", "urlList");
+      const docRef = doc(db, firebaseCollection, "urlList");
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
@@ -179,70 +193,91 @@ const Fund: NextPage = () => {
         </div>
       </header>
       <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
-          <div>
-            Your USDC Balance:{""}
-            {Number(formatUnits(yourUsdcBalance ?? 0n, 6)).toFixed(6)}
-            <span className="font-bold ml-1">{yourTokenSymbol}</span>
-          </div>
-        </div>
-        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
-          <div className="text-xl">
-            Your USDC Allowance Remaining:{" "}
-            <div className="inline-flex items-center justify-center">
-              {parseFloat(formatUnits(allowance ?? 0n, 6)).toFixed(6)}
-              <span className="font-bold ml-1">{yourTokenSymbol}</span>
+        {address && (
+          <>
+            <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
+              <div className="flex flex-col items-center">
+                <span className="font-bold text-lg">🎉 Total Requests Funded 🎉</span>
+                <span className="font-bold mt-1 text-2xl">{totalRequestsFunded.toLocaleString()}</span>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-4">
-            <button
-              className={`btn btn-primary w-full mt-6`}
-              onClick={async () => {
-                try {
-                  await writeUsdcAsync({
-                    functionName: "approve",
-                    args: [rpcFunderContractData?.address, 1000000n],
-                  });
-                } catch (err) {
-                  console.error("Error calling approve function:", err);
-                }
-              }}
-            >
-              Approve 1 USDC For Requests
-            </button>
-          </div>
-        </div>
-        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg min-h-[600px] relative">
+            {/* <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
+              <div className="inline-flex items-center justify-center">
+                Your USDC Balance: {Number(formatUnits(yourUsdcBalance ?? 0n, 6)).toFixed(6)}
+                <span className="ml-1">{yourTokenSymbol}</span>
+              </div>
+            </div> */}
+            <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
+              <span className="font-bold text-lg">💲 Your USDC Allowance Remaining 💲</span>
+              <span className="text-xl mt-2">
+                {parseFloat(formatUnits(allowance ?? 0n, 6)).toFixed(6)}
+                <span className="ml-1">{yourTokenSymbol}</span>
+              </span>
+              <span className="text-l">
+                ({Math.floor(parseFloat(formatUnits(allowance ?? 0n, 6)) * 1000000).toLocaleString()} requests)
+              </span>
+              <div className="flex gap-4">
+                <button
+                  className={`btn btn-primary w-full mt-6`}
+                  onClick={async () => {
+                    try {
+                      await writeUsdcAsync({
+                        functionName: "approve",
+                        args: [rpcFunderContractData?.address, 1000000n],
+                      });
+                    } catch (err) {
+                      console.error("Error calling approve function:", err);
+                    }
+                  }}
+                >
+                  Approve 1 USDC For Requests
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg min-h-[640px] relative">
           <div className="w-full">
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search URLs..."
-                className="input input-bordered w-full"
-                value={searchInput}
-                onChange={e => setSearchInput(e.target.value)}
-              />
-            </div>
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-              {displayUrls
-                .filter(({ url }) => url.toLowerCase().startsWith(searchInput.toLowerCase()))
-                .map(({ url }) => (
-                  <div key={url} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="checkbox checkbox-primary"
-                      checked={selectedUrls.includes(url)}
-                      onChange={() => handleCheckboxChange(url)}
-                    />
-                    <span className="ml-2">{url}</span>
-                  </div>
-                ))}
-            </div>
-            <div className="w-full flex justify-center">
-              <button className="btn btn-primary w-[300px] mt-6 absolute bottom-6" onClick={handleSubmit}>
-                Claim URLs
-              </button>
-            </div>
+            {!address ? (
+              <div className="flex flex-col items-center justify-center h-[400px]">
+                <p className="text-xl font-semibold mb-4">Please connect your wallet to view and claim URLs</p>
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-center w-full">
+                  <span className="font-bold text-lg">Claim URLs</span>
+                </div>
+                <div className="mb-4 mt-4">
+                  <input
+                    type="text"
+                    placeholder="Search URLs..."
+                    className="input input-bordered w-full"
+                    value={searchInput}
+                    onChange={e => setSearchInput(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                  {displayUrls
+                    .filter(({ url }) => url.toLowerCase().startsWith(searchInput.toLowerCase()))
+                    .map(({ url }) => (
+                      <div key={url} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          className="checkbox checkbox-primary"
+                          checked={selectedUrls.includes(url)}
+                          onChange={() => handleCheckboxChange(url)}
+                        />
+                        <span className="ml-2">{url}</span>
+                      </div>
+                    ))}
+                </div>
+                <div className="w-full flex justify-center">
+                  <button className="btn btn-primary w-[300px] mt-6 absolute bottom-6" onClick={handleSubmit}>
+                    Change URL Selection
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
