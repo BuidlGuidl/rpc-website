@@ -106,7 +106,7 @@ const Fund: NextPage = () => {
     };
 
     loadAvailableUrls();
-  }, [address]);
+  });
 
   const handleCheckboxChange = (testName: string) => {
     setSelectedUrls(prev => (prev.includes(testName) ? prev.filter(test => test !== testName) : [...prev, testName]));
