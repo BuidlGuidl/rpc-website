@@ -18,7 +18,12 @@ const Fund: NextPage = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [totalRequestsFunded, setTotalRequestsFunded] = useState(0);
 
-  const firebaseCollection = process.env.NEXT_PUBLIC_FIREBASE_COLLECTION || "stage";
+  const firebaseCollection = process.env.NEXT_PUBLIC_FIREBASE_COLLECTION;
+
+  // Add type guard to ensure firebaseCollection is defined
+  if (!firebaseCollection) {
+    throw new Error("Firebase collection name is not defined in environment variables");
+  }
 
   const { data: rpcFunderContractData } = useDeployedContractInfo("RpcFunder");
   const { writeContractAsync: writeUsdcAsync } = useScaffoldWriteContract("USDC");
@@ -192,10 +197,10 @@ const Fund: NextPage = () => {
           <Image className="w-40" src="rpc-logo.svg" alt="logo" width={260} height={78} />
         </div>
       </header>
-      <div className="flex items-center flex-col flex-grow pt-10">
+      <div className="flex items-center flex-col flex-grow pt-10 lg:border-t-[1px] border-black">
         {address && (
           <>
-            <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
+            <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-16 sm:mt-20 md:mt-10 lg:mt-0 w-full max-w-lg">
               <div className="flex flex-col items-center">
                 <span className="font-bold text-lg">🎉 Total Requests Funded 🎉</span>
                 <span className="font-bold mt-1 text-2xl">{totalRequestsFunded.toLocaleString()}</span>
