@@ -82,11 +82,11 @@ const Home: NextPage = () => {
       </div>
 
       {/* Second row */}
-      <div className="flex flex-col lg:flex-row lg:border-x-[1px] mt-20 md:mt-0 lg:border-y-[1px] border-black">
+      <div className="flex flex-col lg:flex-row lg:border-x-[1px] lg:border-b-[1px] mt-0 border-black">
         {/* Second row for mobile - flex row to make sections share the row */}
         <div className="flex flex-col flex-1">
           {/* Satellite section */}
-          <section className="bg-[#20F658] p-6 flex justify-center items-center border-r-[1px] border-l-[1px] border-b-[1px] border-black lg:border-r-0 flex-1">
+          <section className="bg-[#20F658] p-6 flex justify-center items-center border-l-[1px] lg:border-l-[0px] border-r-[1px] lg:border-r-[1px] border-b-[1px] border-black flex-1">
             <div className="flex flex-col items-center min-w-[300px]">
               <span className="font-bold">Total Requests Funded</span>
               <span className="font-bold text-2xl mt-2">{totalRequests.toLocaleString()}</span>
@@ -94,7 +94,7 @@ const Home: NextPage = () => {
           </section>
 
           {/* Button section */}
-          <section className="bg-[#DDDDDD] flex justify-center border-x-[1px] border-b-[1px] border-black lg:border-b-0 lg:border-r-0">
+          <section className="bg-[#DDDDDD] flex justify-center border-x-[1px] border-b-[0px] lg:border-l-[0px] border-black lg:border-b-0">
             <button
               onClick={() => (window.location.href = "/fund")}
               className="bg-white h-16 w-full flex items-center justify-center hover:bg-[#FF66F9] transition-colors"
