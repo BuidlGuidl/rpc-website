@@ -59,7 +59,7 @@ const Home: NextPage = () => {
         {/* Second row for mobile - flex row to make sections share the row */}
         <div className="flex flex-col flex-1">
           {/* Satellite section */}
-          <section className="bg-[#20F658] p-6 flex justify-center items-center border-r-[1px] border-l-[1px] border-b-[1px] border-black lg:border-r-0 flex-1 min-w-[372px]">
+          <section className="bg-[#20F658] p-6 flex justify-center items-center border-r-[1px] border-l-[1px] border-b-[1px] border-black lg:border-r-0 flex-1 lg:min-w-[436px]">
             <Image
               src="/satellite-10fps.gif"
               alt="satellite"
