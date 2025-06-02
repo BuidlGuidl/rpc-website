@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { NextPage } from "next";
 import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
+import { Header } from "~~/components/Header";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { db } from "~~/services/firebase";
 
@@ -191,16 +191,11 @@ const Fund: NextPage = () => {
         </div>
       )}
 
-      {/* Header with fixed logo */}
-      <header className="container mx-auto md:pb-24 lg:pb-28 border-l border-r border-black md:mt-0">
-        <div className="fixed container mt-4 xs:mt-0 md:mt-0 z-10 md:p-6 lg:p-8">
-          <Image className="w-40" src="rpc-logo.svg" alt="logo" width={260} height={78} />
-        </div>
-      </header>
+      <Header />
       <div className="flex items-center flex-col flex-grow pt-10 lg:border-t-[1px] border-black">
         {address && (
           <>
-            <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-16 sm:mt-20 md:mt-10 lg:mt-0 w-full max-w-lg">
+            <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-0 w-full max-w-lg">
               <div className="flex flex-col items-center">
                 <span className="font-bold text-lg">🎉 Total Requests Funded 🎉</span>
                 <span className="font-bold mt-1 text-2xl">{totalRequestsFunded.toLocaleString()}</span>
