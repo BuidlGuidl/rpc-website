@@ -16,7 +16,8 @@ const Fund: NextPage = () => {
   const [displayUrls, setDisplayUrls] = useState<{ url: string; owner: string }[]>([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-  const [totalRequestsFunded, setTotalRequestsFunded] = useState(0);
+  const [requestsFunded, setRequestsFunded] = useState(0);
+  const [requestsRemaining, setRequestsRemaining] = useState(0);
 
   const firebaseCollection = process.env.NEXT_PUBLIC_FIREBASE_COLLECTION;
 
@@ -25,7 +26,7 @@ const Fund: NextPage = () => {
     throw new Error("Firebase collection name is not defined in environment variables");
   }
 
-  const { data: rpcFunderContractData } = useDeployedContractInfo("RpcFunder");
+  const { data: bankContractData } = useDeployedContractInfo("Bank");
   const { writeContractAsync: writeUsdcAsync } = useScaffoldWriteContract("USDC");
 
   // Reduce polling frequency for contract reads
@@ -45,7 +46,7 @@ const Fund: NextPage = () => {
   const { data: allowance } = useScaffoldReadContract({
     contractName: "USDC",
     functionName: "allowance",
-    args: [address, rpcFunderContractData?.address],
+    args: [address, bankContractData?.address],
   });
 
   // Load available URLs from Firebase
@@ -90,8 +91,10 @@ const Fund: NextPage = () => {
             const userRequestCountSnap = await getDoc(userRequestCountRef);
             if (userRequestCountSnap.exists()) {
               const userData = userRequestCountSnap.data();
-              const userCount = userData[address]?.totalRequests || 0;
-              setTotalRequestsFunded(userCount);
+              const userCount = userData[address]?.requestsFunded || 0;
+              const remainingCount = userData[address]?.requestsRemaining || 0;
+              setRequestsFunded(userCount);
+              setRequestsRemaining(remainingCount);
             } else {
               console.log("No request count document found in stage collection");
             }
@@ -166,6 +169,45 @@ const Fund: NextPage = () => {
 
         setSuccessMessage(message);
         setShowSuccessModal(true);
+
+        // Proceed with transfer
+        if (!bankContractData?.address) {
+          throw new Error("Bank contract address not found");
+        }
+        await writeUsdcAsync({
+          functionName: "transfer",
+          args: [bankContractData.address, 100000n],
+        });
+
+        // Update Firebase with new funded requests count
+        const requestsToAdd = (Number(100000n) * 200000) / 1000000; // Convert USDC to funded requests (1 USDC = 200,000 requests)
+        const userRequestCountRef = doc(db, firebaseCollection, "userRequestCount");
+        const userRequestCountSnap = await getDoc(userRequestCountRef);
+
+        if (userRequestCountSnap.exists()) {
+          const userData = userRequestCountSnap.data();
+          const currentRequestsFunded = userData[address]?.requestsFunded || 0;
+          await setDoc(
+            userRequestCountRef,
+            {
+              [address]: {
+                ...userData[address],
+                requestsFunded: currentRequestsFunded + requestsToAdd,
+              },
+            },
+            { merge: true },
+          );
+        } else {
+          // If document doesn't exist, create it with initial count
+          await setDoc(userRequestCountRef, {
+            [address]: {
+              requestsFunded: requestsToAdd,
+            },
+          });
+        }
+
+        // Update the local state to reflect the new total
+        setRequestsFunded(prev => prev + requestsToAdd);
       }
     } catch (e) {
       console.error("Error updating URL owners:", e);
@@ -198,7 +240,7 @@ const Fund: NextPage = () => {
             <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-0 w-full max-w-lg">
               <div className="flex flex-col items-center">
                 <span className="font-bold text-lg">🎉 Total Requests Funded 🎉</span>
-                <span className="font-bold mt-1 text-2xl">{totalRequestsFunded.toLocaleString()}</span>
+                <span className="font-bold mt-1 text-2xl">{requestsFunded.toLocaleString()}</span>
               </div>
             </div>
             <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
@@ -209,6 +251,7 @@ const Fund: NextPage = () => {
             </div>
             <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
               <span className="font-bold text-lg">💲 Your USDC Allowance Remaining 💲</span>
+              <span className="font-bold mt-1 text-2xl">{requestsRemaining.toLocaleString()}</span>
               <span className="text-xl mt-2">
                 {parseFloat(formatUnits(allowance ?? 0n, 6)).toFixed(6)}
                 <span className="ml-1">{yourTokenSymbol}</span>
@@ -221,16 +264,63 @@ const Fund: NextPage = () => {
                   className={`btn btn-primary w-full mt-6`}
                   onClick={async () => {
                     try {
+                      if (!bankContractData?.address) {
+                        throw new Error("Bank contract address not found");
+                      }
+
+                      const requiredAmount = 100000n; // 0.1 USDC (6 decimals)
+                      const bankAddress = bankContractData.address; // Store address to satisfy TypeScript
+
+                      // Check if we need to approve first
+                      if (!allowance || allowance < requiredAmount) {
+                        // Only approve if we don't have enough allowance
+                        await writeUsdcAsync({
+                          functionName: "approve",
+                          args: [bankAddress, requiredAmount],
+                        });
+                      }
+
+                      // Proceed with transfer
                       await writeUsdcAsync({
-                        functionName: "approve",
-                        args: [rpcFunderContractData?.address, 1000000n],
+                        functionName: "transfer",
+                        args: [bankAddress, requiredAmount],
                       });
+
+                      // Update Firebase with new funded requests count
+                      const requestsToAdd = (Number(requiredAmount) * 200000) / 1000000; // Convert USDC to funded requests (1 USDC = 200,000 requests)
+                      const userRequestCountRef = doc(db, firebaseCollection, "userRequestCount");
+                      const userRequestCountSnap = await getDoc(userRequestCountRef);
+
+                      if (userRequestCountSnap.exists()) {
+                        const userData = userRequestCountSnap.data();
+                        const currentRequestsRemaining = userData[address]?.requestsRemaining || 0;
+                        await setDoc(
+                          userRequestCountRef,
+                          {
+                            [address]: {
+                              ...userData[address],
+                              requestsRemaining: currentRequestsRemaining + requestsToAdd,
+                            },
+                          },
+                          { merge: true },
+                        );
+                      } else {
+                        // If document doesn't exist, create it with initial count
+                        await setDoc(userRequestCountRef, {
+                          [address]: {
+                            requestsRemaining: requestsToAdd,
+                          },
+                        });
+                      }
+
+                      // Update the local state to reflect the new total
+                      setRequestsRemaining(prev => prev + requestsToAdd);
                     } catch (err) {
-                      console.error("Error calling approve function:", err);
+                      console.error("Error in approve/transfer sequence:", err);
                     }
                   }}
                 >
-                  Approve 1 USDC For Requests
+                  {!allowance || allowance < 100000n ? "Approve & Transfer 0.1 USDC" : "Transfer 0.1 USDC"}
                 </button>
               </div>
             </div>

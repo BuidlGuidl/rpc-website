@@ -10,7 +10,7 @@ import { db } from "~~/services/firebase";
 
 const Home: NextPage = () => {
   // const router = useRouter();
-  const [totalRequests, setTotalRequests] = useState(0);
+  const [totalRequestsFunded, setTotalRequestsFunded] = useState(0);
   const firebaseCollection = process.env.NEXT_PUBLIC_FIREBASE_COLLECTION;
 
   useEffect(() => {
@@ -20,15 +20,15 @@ const Home: NextPage = () => {
         return;
       }
       try {
-        const userRequestCountRef = doc(db, firebaseCollection, "userRequestCount");
-        const userRequestCountSnap = await getDoc(userRequestCountRef);
-        if (userRequestCountSnap.exists()) {
-          const userData = userRequestCountSnap.data();
-          const total = Object.values(userData).reduce((sum: number, user: any) => sum + (user.totalRequests || 0), 0);
-          setTotalRequests(total);
+        const docRef = doc(db, firebaseCollection, "userRequestCount");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          const total = Object.values(userData).reduce((sum: number, user: any) => sum + (user.requestsFunded || 0), 0);
+          setTotalRequestsFunded(total);
         }
-      } catch (e) {
-        console.error("Error fetching total requests:", e);
+      } catch (error) {
+        console.error("Error fetching total requests:", error);
       }
     };
 
@@ -85,7 +85,7 @@ const Home: NextPage = () => {
           <section className="bg-[#20F658] p-6 flex justify-center items-center border-l-[1px] lg:border-l-[0px] border-r-[1px] lg:border-r-[1px] border-b-[1px] border-black flex-1">
             <div className="flex flex-col items-center min-w-[300px]">
               <span className="font-bold">Total Requests Funded</span>
-              <span className="font-bold text-2xl mt-2">{totalRequests.toLocaleString()}</span>
+              <span className="font-bold text-2xl mt-2">{totalRequestsFunded.toLocaleString()}</span>
             </div>
           </section>
 
