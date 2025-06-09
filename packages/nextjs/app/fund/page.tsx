@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { NextPage } from "next";
 import { useInterval } from "usehooks-ts";
@@ -51,7 +51,7 @@ const Fund: NextPage = () => {
   });
 
   // Load available URLs from Firebase
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     if (!address) return;
 
     try {
@@ -111,11 +111,11 @@ const Fund: NextPage = () => {
         console.error("Error message:", e.message);
       }
     }
-  };
+  }, [address, firebaseCollection]);
 
   useEffect(() => {
     fetchUserData();
-  }, [address, firebaseCollection]);
+  }, [fetchUserData]);
 
   // Poll for updates every 10 seconds
   useInterval(fetchUserData, 10000);
