@@ -104,7 +104,7 @@ const Home: NextPage = () => {
         <section className="bg-[#DDDDDD] p-6 lg:p-10 w-full lg:w-[60vw] border-x-[1px] border-y-[1px] border-black lg:border-none">
           <div className="flex flex-col">
             <p className="mt-0">
-              Feeling generous? Donate USDC to fund BuidlGuidl RPC requests. 1 USDC will pay for 1 million requests.
+              Feeling generous? Donate USDC to fund BuidlGuidl RPC requests. 1 USDC will pay for 200,000 requests.
             </p>
           </div>
         </section>

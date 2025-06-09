@@ -9,6 +9,9 @@ import { useAccount } from "wagmi";
 import { Header } from "~~/components/Header";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { db } from "~~/services/firebase";
+import { notification } from "~~/utils/scaffold-eth";
+
+const requestsPerUsdc = 200000; // 200,000 requests per 1 USDC
 
 const Fund: NextPage = () => {
   const { address } = useAccount();
@@ -37,17 +40,11 @@ const Fund: NextPage = () => {
     watch: false, // Disable automatic polling
   });
 
-  const { data: yourUsdcBalance } = useScaffoldReadContract({
+  const { data: yourUsdcBalance, refetch: refetchUsdcBalance } = useScaffoldReadContract({
     contractName: "USDC",
     functionName: "balanceOf",
     args: [address],
     watch: false, // Disable automatic polling
-  });
-
-  const { data: allowance } = useScaffoldReadContract({
-    contractName: "USDC",
-    functionName: "allowance",
-    args: [address, bankContractData?.address],
   });
 
   // Load available URLs from Firebase
@@ -119,6 +116,7 @@ const Fund: NextPage = () => {
 
   // Poll for updates every 10 seconds
   useInterval(fetchUserData, 10000);
+  useInterval(refetchUsdcBalance, 10000);
 
   const handleCheckboxChange = (testName: string) => {
     setSelectedUrls(prev => (prev.includes(testName) ? prev.filter(test => test !== testName) : [...prev, testName]));
@@ -178,13 +176,23 @@ const Fund: NextPage = () => {
         if (!bankContractData?.address) {
           throw new Error("Bank contract address not found");
         }
+        const requiredAmount = 100000n; // 0.1 USDC (6 decimals)
+        const bankAddress = bankContractData.address; // Store address to satisfy TypeScript
+
+        // Check if user has enough USDC balance
+        if (!yourUsdcBalance || yourUsdcBalance < requiredAmount) {
+          notification.error("Insufficient USDC balance. Please ensure you have at least 0.1 USDC in your wallet.");
+          return;
+        }
+
+        // Proceed with transfer
         await writeUsdcAsync({
           functionName: "transfer",
-          args: [bankContractData.address, 100000n],
+          args: [bankAddress, requiredAmount],
         });
 
         // Update Firebase with new funded requests count
-        const requestsToAdd = (Number(100000n) * 200000) / 1000000; // Convert USDC to funded requests (1 USDC = 200,000 requests)
+        const requestsToAdd = (Number(requiredAmount) * requestsPerUsdc) / 1000000; // Convert USDC to funded requests
         const userRequestCountRef = doc(db, firebaseCollection, "userRequestCount");
         const userRequestCountSnap = await getDoc(userRequestCountRef);
 
@@ -248,21 +256,15 @@ const Fund: NextPage = () => {
               </div>
             </div>
             <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
-              <div className="inline-flex items-center justify-center">
-                Your USDC Balance: {Number(formatUnits(yourUsdcBalance ?? 0n, 6)).toFixed(6)}
+              <span className="font-bold text-lg">💲 Your USDC Balance 💲</span>
+              <div className="inline-flex items-center justify-center font-bold text-lg">
+                {Number(formatUnits(yourUsdcBalance ?? 0n, 6)).toFixed(6)}
                 <span className="ml-1">{yourTokenSymbol}</span>
               </div>
             </div>
             <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
-              <span className="font-bold text-lg">💲 Your USDC Allowance Remaining 💲</span>
+              <span className="font-bold text-lg">📡 Your Requests Remaining 📡</span>
               <span className="font-bold mt-1 text-2xl">{requestsRemaining.toLocaleString()}</span>
-              <span className="text-xl mt-2">
-                {parseFloat(formatUnits(allowance ?? 0n, 6)).toFixed(6)}
-                <span className="ml-1">{yourTokenSymbol}</span>
-              </span>
-              <span className="text-l">
-                ({Math.floor(parseFloat(formatUnits(allowance ?? 0n, 6)) * 1000000).toLocaleString()} requests)
-              </span>
               <div className="flex gap-4">
                 <button
                   className={`btn btn-primary w-full mt-6`}
@@ -275,13 +277,12 @@ const Fund: NextPage = () => {
                       const requiredAmount = 100000n; // 0.1 USDC (6 decimals)
                       const bankAddress = bankContractData.address; // Store address to satisfy TypeScript
 
-                      // Check if we need to approve first
-                      if (!allowance || allowance < requiredAmount) {
-                        // Only approve if we don't have enough allowance
-                        await writeUsdcAsync({
-                          functionName: "approve",
-                          args: [bankAddress, requiredAmount],
-                        });
+                      // Check if user has enough USDC balance
+                      if (!yourUsdcBalance || yourUsdcBalance < requiredAmount) {
+                        notification.error(
+                          "Insufficient USDC balance. Please ensure you have at least 0.1 USDC in your wallet.",
+                        );
+                        return;
                       }
 
                       // Proceed with transfer
@@ -291,7 +292,7 @@ const Fund: NextPage = () => {
                       });
 
                       // Update Firebase with new funded requests count
-                      const requestsToAdd = (Number(requiredAmount) * 200000) / 1000000; // Convert USDC to funded requests (1 USDC = 200,000 requests)
+                      const requestsToAdd = (Number(requiredAmount) * requestsPerUsdc) / 1000000; // Convert USDC to funded requests
                       const userRequestCountRef = doc(db, firebaseCollection, "userRequestCount");
                       const userRequestCountSnap = await getDoc(userRequestCountRef);
 
@@ -324,7 +325,7 @@ const Fund: NextPage = () => {
                     }
                   }}
                 >
-                  {!allowance || allowance < 100000n ? "Approve & Transfer 0.1 USDC" : "Transfer 0.1 USDC"}
+                  Transfer 0.1 USDC for 20,000 Requests
                 </button>
               </div>
             </div>
