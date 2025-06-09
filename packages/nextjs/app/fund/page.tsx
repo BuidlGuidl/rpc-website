@@ -35,12 +35,12 @@ const Fund: NextPage = () => {
     watch: false, // Disable automatic polling
   });
 
-  // const { data: yourUsdcBalance } = useScaffoldReadContract({
-  //   contractName: "USDC",
-  //   functionName: "balanceOf",
-  //   args: [address],
-  //   watch: false, // Disable automatic polling
-  // });
+  const { data: yourUsdcBalance } = useScaffoldReadContract({
+    contractName: "USDC",
+    functionName: "balanceOf",
+    args: [address],
+    watch: false, // Disable automatic polling
+  });
 
   const { data: allowance } = useScaffoldReadContract({
     contractName: "USDC",
@@ -201,12 +201,12 @@ const Fund: NextPage = () => {
                 <span className="font-bold mt-1 text-2xl">{totalRequestsFunded.toLocaleString()}</span>
               </div>
             </div>
-            {/* <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
+            <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
               <div className="inline-flex items-center justify-center">
                 Your USDC Balance: {Number(formatUnits(yourUsdcBalance ?? 0n, 6)).toFixed(6)}
                 <span className="ml-1">{yourTokenSymbol}</span>
               </div>
-            </div> */}
+            </div>
             <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
               <span className="font-bold text-lg">💲 Your USDC Allowance Remaining 💲</span>
               <span className="text-xl mt-2">
