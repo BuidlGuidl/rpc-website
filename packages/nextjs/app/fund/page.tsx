@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { NextPage } from "next";
+import { useInterval } from "usehooks-ts";
 import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
 import { Header } from "~~/components/Header";
@@ -50,71 +51,74 @@ const Fund: NextPage = () => {
   });
 
   // Load available URLs from Firebase
-  useEffect(() => {
-    const loadAvailableUrls = async () => {
-      try {
-        const docRef = doc(db, firebaseCollection, "urlList");
-        const docSnap = await getDoc(docRef);
+  const fetchUserData = async () => {
+    if (!address) return;
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          // Convert object to array of {url, owner} objects, filter out timestamp and claimed URLs
-          const urlsWithOwners = Object.entries(data)
-            .filter(([key]) => key !== "timestamp") // Filter out timestamp
-            .map(([url, urlData]) => ({
-              url,
-              owner: (urlData as { owner: string }).owner,
-            }))
-            .filter(item => !item.owner || String(item.owner).toLowerCase() === String(address)?.toLowerCase()) // Only show unclaimed or user's URLs
-            .sort((a, b) => a.url.localeCompare(b.url)); // Sort alphabetically
-          setDisplayUrls(urlsWithOwners);
+    try {
+      const docRef = doc(db, firebaseCollection, "urlList");
+      const docSnap = await getDoc(docRef);
 
-          // Set selected URLs based on owner
-          if (address) {
-            const userSelectedUrls = urlsWithOwners
-              .filter(item => String(item.owner).toLowerCase() === String(address).toLowerCase())
-              .map(item => item.url);
-            setSelectedUrls(userSelectedUrls);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        // Convert object to array of {url, owner} objects, filter out timestamp and claimed URLs
+        const urlsWithOwners = Object.entries(data)
+          .filter(([key]) => key !== "timestamp") // Filter out timestamp
+          .map(([url, urlData]) => ({
+            url,
+            owner: (urlData as { owner: string }).owner,
+          }))
+          .filter(item => !item.owner || String(item.owner).toLowerCase() === String(address)?.toLowerCase()) // Only show unclaimed or user's URLs
+          .sort((a, b) => a.url.localeCompare(b.url)); // Sort alphabetically
+        setDisplayUrls(urlsWithOwners);
 
-            // Sort URLs with selected ones at the top
-            const sortedUrls = [...urlsWithOwners].sort((a, b) => {
-              const aSelected = userSelectedUrls.includes(a.url);
-              const bSelected = userSelectedUrls.includes(b.url);
-              if (aSelected && !bSelected) return -1;
-              if (!aSelected && bSelected) return 1;
-              return a.url.localeCompare(b.url);
-            });
-            setDisplayUrls(sortedUrls);
+        // Set selected URLs based on owner
+        const userSelectedUrls = urlsWithOwners
+          .filter(item => String(item.owner).toLowerCase() === String(address).toLowerCase())
+          .map(item => item.url);
+        setSelectedUrls(userSelectedUrls);
 
-            // Fetch total requests funded
-            const userRequestCountRef = doc(db, firebaseCollection, "userRequestCount");
-            const userRequestCountSnap = await getDoc(userRequestCountRef);
-            if (userRequestCountSnap.exists()) {
-              const userData = userRequestCountSnap.data();
-              const userCount = userData[address]?.requestsFunded || 0;
-              const remainingCount = userData[address]?.requestsRemaining || 0;
-              setRequestsFunded(userCount);
-              setRequestsRemaining(remainingCount);
-            } else {
-              console.log("No request count document found in stage collection");
-            }
-          }
+        // Sort URLs with selected ones at the top
+        const sortedUrls = [...urlsWithOwners].sort((a, b) => {
+          const aSelected = userSelectedUrls.includes(a.url);
+          const bSelected = userSelectedUrls.includes(b.url);
+          if (aSelected && !bSelected) return -1;
+          if (!aSelected && bSelected) return 1;
+          return a.url.localeCompare(b.url);
+        });
+        setDisplayUrls(sortedUrls);
+
+        // Fetch total requests funded and remaining
+        const userRequestCountRef = doc(db, firebaseCollection, "userRequestCount");
+        const userRequestCountSnap = await getDoc(userRequestCountRef);
+        if (userRequestCountSnap.exists()) {
+          const userData = userRequestCountSnap.data();
+          const userCount = userData[address]?.requestsFunded || 0;
+          const remainingCount = userData[address]?.requestsRemaining || 0;
+          setRequestsFunded(userCount);
+          setRequestsRemaining(remainingCount);
         } else {
-          console.log("No URL list found");
-          setSelectedUrls([]);
-          setDisplayUrls([]);
+          console.log("No request count document found in stage collection");
         }
-      } catch (e) {
-        console.error("Error loading URL list:", e);
-        if (e instanceof Error) {
-          console.error("Error name:", e.name);
-          console.error("Error message:", e.message);
-        }
+      } else {
+        console.log("No URL list found");
+        setSelectedUrls([]);
+        setDisplayUrls([]);
       }
-    };
+    } catch (e) {
+      console.error("Error loading URL list:", e);
+      if (e instanceof Error) {
+        console.error("Error name:", e.name);
+        console.error("Error message:", e.message);
+      }
+    }
+  };
 
-    loadAvailableUrls();
+  useEffect(() => {
+    fetchUserData();
   }, [address, firebaseCollection]);
+
+  // Poll for updates every 10 seconds
+  useInterval(fetchUserData, 10000);
 
   const handleCheckboxChange = (testName: string) => {
     setSelectedUrls(prev => (prev.includes(testName) ? prev.filter(test => test !== testName) : [...prev, testName]));
