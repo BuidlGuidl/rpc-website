@@ -16,6 +16,7 @@ const Fund: NextPage = () => {
   const [searchInput, setSearchInput] = useState("");
   const [displayUrls, setDisplayUrls] = useState<string[]>([]);
   const [urlRequestsRemaining, setUrlRequestsRemaining] = useState<Record<string, number>>({});
+  const [urlRequestsTotal, setUrlRequestsTotal] = useState<Record<string, number>>({});
 
   const firebaseCollection = process.env.NEXT_PUBLIC_FIREBASE_COLLECTION;
 
@@ -63,6 +64,7 @@ const Fund: NextPage = () => {
       const data = await response.json();
       setDisplayUrls(data.urls || []);
       setUrlRequestsRemaining(data.urlRequestsRemaining || {});
+      setUrlRequestsTotal(data.urlRequestsTotal || {});
     } catch (e) {
       console.error("Error loading URL list:", e);
       if (e instanceof Error) {
@@ -72,6 +74,7 @@ const Fund: NextPage = () => {
       // Set empty state on error
       setDisplayUrls([]);
       setUrlRequestsRemaining({});
+      setUrlRequestsTotal({});
     }
   }, [address, firebaseCollection]);
 
@@ -121,6 +124,7 @@ const Fund: NextPage = () => {
                 <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 border border-base-300 rounded-lg p-4">
                   {displayUrls
                     .filter(url => url.toLowerCase().startsWith(searchInput.toLowerCase()))
+                    .sort((a, b) => (urlRequestsTotal[b] || 0) - (urlRequestsTotal[a] || 0))
                     .map(url => (
                       <div
                         key={url}
@@ -129,7 +133,10 @@ const Fund: NextPage = () => {
                         <div className="flex-1 sm:flex sm:items-center">
                           <span className="block sm:inline">{url}</span>
                           <span className="block mt-1 sm:mt-0 sm:ml-2 text-sm text-gray-500">
-                            [Requests Funded:
+                            [Requests Total:
+                            <span className="hidden sm:inline">{(urlRequestsTotal[url] || 0).toLocaleString()}</span>
+                            <span className="sm:hidden">{formatRequestsRemaining(urlRequestsTotal[url] || 0)}</span>
+                            {" | Funded:"}
                             <span className="hidden sm:inline">
                               {(urlRequestsRemaining[url] || 0).toLocaleString()}
                             </span>

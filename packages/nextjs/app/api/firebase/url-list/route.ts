@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         urls: [],
         urlRequestsRemaining: {},
+        urlRequestsTotal: {},
       });
     }
 
@@ -27,17 +28,20 @@ export async function GET(request: NextRequest) {
       .filter(key => key !== "timestamp")
       .sort((a, b) => a.localeCompare(b));
 
-    // Store requests remaining for each URL
+    // Store requests remaining and total for each URL
     const urlRequestsRemaining: Record<string, number> = {};
+    const urlRequestsTotal: Record<string, number> = {};
     Object.entries(data || {}).forEach(([url, urlData]) => {
       if (url !== "timestamp") {
         urlRequestsRemaining[url] = (urlData as any)?.requestsRemaining || 0;
+        urlRequestsTotal[url] = (urlData as any)?.requestsTotal || 0;
       }
     });
 
     return NextResponse.json({
       urls,
       urlRequestsRemaining,
+      urlRequestsTotal,
     });
   } catch (error) {
     console.error("Error fetching URL list:", error);
