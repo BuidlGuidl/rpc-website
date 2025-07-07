@@ -15,6 +15,9 @@ node_modules
 # misc
 .DS_Store
 
+# Firebase Admin SDK credentials
+packages/nextjs/firebase-service-account.json
+
 # IDE
 .vscode
 .idea

@@ -1,14 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { doc, getDoc, setDoc } from "firebase/firestore";
 import { NextPage } from "next";
 import { useInterval } from "usehooks-ts";
 import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
 import { Header } from "~~/components/Header";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import { db } from "~~/services/firebase";
 import { notification } from "~~/utils/scaffold-eth";
 
 const requestsPerUsdc = 200000; // 200,000 requests per 1 USDC
@@ -57,36 +55,23 @@ const Fund: NextPage = () => {
     if (!address) return;
 
     try {
-      const docRef = doc(db, firebaseCollection, "urlList");
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        // Convert object to array of URLs, filter out timestamp
-        const urls = Object.keys(data)
-          .filter(key => key !== "timestamp") // Filter out timestamp
-          .sort((a, b) => a.localeCompare(b)); // Sort alphabetically
-        setDisplayUrls(urls);
-
-        // Store requests remaining for each URL
-        const requestsMap: Record<string, number> = {};
-        Object.entries(data).forEach(([url, urlData]) => {
-          if (url !== "timestamp") {
-            requestsMap[url] = (urlData as any)?.requestsRemaining || 0;
-          }
-        });
-        setUrlRequestsRemaining(requestsMap);
-      } else {
-        console.log("No URL list found");
-        setDisplayUrls([]);
-        setUrlRequestsRemaining({});
+      const response = await fetch(`/api/firebase/url-list?collection=${firebaseCollection}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch URL list");
       }
+
+      const data = await response.json();
+      setDisplayUrls(data.urls || []);
+      setUrlRequestsRemaining(data.urlRequestsRemaining || {});
     } catch (e) {
       console.error("Error loading URL list:", e);
       if (e instanceof Error) {
         console.error("Error name:", e.name);
         console.error("Error message:", e.message);
       }
+      // Set empty state on error
+      setDisplayUrls([]);
+      setUrlRequestsRemaining({});
     }
   }, [address, firebaseCollection]);
 
@@ -179,22 +164,23 @@ const Fund: NextPage = () => {
 
                               // Update Firebase with new funded requests count for this specific URL
                               const requestsToAdd = (Number(requiredAmount) * requestsPerUsdc) / 1000000; // Convert USDC to funded requests
-                              const urlListRef = doc(db, firebaseCollection, "urlList");
-                              const urlListSnap = await getDoc(urlListRef);
 
-                              if (urlListSnap.exists()) {
-                                const urlData = urlListSnap.data();
-                                const currentRequestsRemaining = urlData[url]?.requestsRemaining || 0;
-                                await setDoc(
-                                  urlListRef,
-                                  {
-                                    [url]: {
-                                      ...urlData[url],
-                                      requestsRemaining: currentRequestsRemaining + requestsToAdd,
-                                    },
+                              const updateResponse = await fetch(
+                                `/api/firebase/url-list?collection=${firebaseCollection}`,
+                                {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
                                   },
-                                  { merge: true },
-                                );
+                                  body: JSON.stringify({
+                                    url,
+                                    requestsToAdd,
+                                  }),
+                                },
+                              );
+
+                              if (!updateResponse.ok) {
+                                throw new Error("Failed to update URL requests");
                               }
 
                               // Update the local state to reflect the new total

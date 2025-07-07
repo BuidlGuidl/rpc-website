@@ -3,10 +3,8 @@
 // import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { doc, getDoc } from "firebase/firestore";
 import { NextPage } from "next";
 import { Header } from "~~/components/Header";
-import { db } from "~~/services/firebase";
 
 const Home: NextPage = () => {
   // const router = useRouter();
@@ -20,12 +18,12 @@ const Home: NextPage = () => {
         return;
       }
       try {
-        const docRef = doc(db, firebaseCollection, "requestCount");
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setTotalRequestsFunded(data.totalFundedRequests || 0);
+        const response = await fetch(`/api/firebase/request-count?collection=${firebaseCollection}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch request count");
         }
+        const data = await response.json();
+        setTotalRequestsFunded(data.totalFundedRequests || 0);
       } catch (error) {
         console.error("Error fetching total requests:", error);
       }
