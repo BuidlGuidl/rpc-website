@@ -17,7 +17,6 @@ const Fund: NextPage = () => {
   const { address } = useAccount();
   const [searchInput, setSearchInput] = useState("");
   const [displayUrls, setDisplayUrls] = useState<string[]>([]);
-  const [requestsFunded, setRequestsFunded] = useState(0);
   const [urlRequestsRemaining, setUrlRequestsRemaining] = useState<Record<string, number>>({});
 
   const firebaseCollection = process.env.NEXT_PUBLIC_FIREBASE_COLLECTION;
@@ -45,8 +44,10 @@ const Fund: NextPage = () => {
   });
 
   const formatRequestsRemaining = (count: number): string => {
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}k`.replace(".0k", "k");
+    if (count >= 1_000_000) {
+      return `${Math.floor(count / 100_000) / 10}M`.replace(".0M", "M");
+    } else if (count >= 1_000) {
+      return `${Math.floor(count / 100) / 10}k`.replace(".0k", "k");
     }
     return count.toString();
   };
@@ -75,17 +76,6 @@ const Fund: NextPage = () => {
           }
         });
         setUrlRequestsRemaining(requestsMap);
-
-        // Fetch total requests funded
-        const userRequestCountRef = doc(db, firebaseCollection, "userRequestCount");
-        const userRequestCountSnap = await getDoc(userRequestCountRef);
-        if (userRequestCountSnap.exists()) {
-          const userData = userRequestCountSnap.data();
-          const userCount = userData[address]?.requestsFunded || 0;
-          setRequestsFunded(userCount);
-        } else {
-          console.log("No request count document found in stage collection");
-        }
       } else {
         console.log("No URL list found");
         setDisplayUrls([]);
@@ -114,12 +104,6 @@ const Fund: NextPage = () => {
       <div className="flex items-center flex-col flex-grow pt-10 lg:border-t-[1px] border-black">
         {address && (
           <>
-            <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-0 w-full max-w-lg">
-              <div className="flex flex-col items-center">
-                <span className="font-bold text-lg">🎉 Total Requests Funded 🎉</span>
-                <span className="font-bold mt-1 text-2xl">{requestsFunded.toLocaleString()}</span>
-              </div>
-            </div>
             <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
               <span className="font-bold text-lg">💲 Your USDC Balance 💲</span>
               <div className="inline-flex items-center justify-center font-bold text-lg">
@@ -127,76 +111,9 @@ const Fund: NextPage = () => {
                 <span className="ml-1">{yourTokenSymbol}</span>
               </div>
             </div>
-            {/* <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
-              <span className="font-bold text-lg">📡 Your Requests Remaining 📡</span>
-              <span className="font-bold mt-1 text-2xl">{requestsRemaining.toLocaleString()}</span>
-              <div className="flex gap-4">
-                <button
-                  className={`btn btn-primary w-full mt-6`}
-                  onClick={async () => {
-                    try {
-                      if (!bankContractData?.address) {
-                        throw new Error("Bank contract address not found");
-                      }
-
-                      const requiredAmount = 100000n; // 0.1 USDC (6 decimals)
-                      const bankAddress = bankContractData.address; // Store address to satisfy TypeScript
-
-                      // Check if user has enough USDC balance
-                      if (!yourUsdcBalance || yourUsdcBalance < requiredAmount) {
-                        notification.error(
-                          "Insufficient USDC balance. Please ensure you have at least 0.1 USDC in your wallet.",
-                        );
-                        return;
-                      }
-
-                      // Proceed with transfer
-                      await writeUsdcAsync({
-                        functionName: "transfer",
-                        args: [bankAddress, requiredAmount],
-                      });
-
-                      // Update Firebase with new funded requests count
-                      const requestsToAdd = (Number(requiredAmount) * requestsPerUsdc) / 1000000; // Convert USDC to funded requests
-                      const userRequestCountRef = doc(db, firebaseCollection, "userRequestCount");
-                      const userRequestCountSnap = await getDoc(userRequestCountRef);
-
-                      if (userRequestCountSnap.exists()) {
-                        const userData = userRequestCountSnap.data();
-                        const currentRequestsRemaining = userData[address]?.requestsRemaining || 0;
-                        await setDoc(
-                          userRequestCountRef,
-                          {
-                            [address]: {
-                              ...userData[address],
-                              requestsRemaining: currentRequestsRemaining + requestsToAdd,
-                            },
-                          },
-                          { merge: true },
-                        );
-                      } else {
-                        // If document doesn't exist, create it with initial count
-                        await setDoc(userRequestCountRef, {
-                          [address]: {
-                            requestsRemaining: requestsToAdd,
-                          },
-                        });
-                      }
-
-                      // Update the local state to reflect the new total
-                      setRequestsRemaining(prev => prev + requestsToAdd);
-                    } catch (err) {
-                      console.error("Error in approve/transfer sequence:", err);
-                    }
-                  }}
-                >
-                  Transfer 0.1 USDC for 20,000 Requests
-                </button>
-              </div>
-            </div> */}
           </>
         )}
-        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg min-h-[640px] relative">
+        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-16 w-full relative">
           <div className="w-full">
             {!address ? (
               <div className="flex flex-col items-center justify-center h-[400px]">
@@ -205,7 +122,7 @@ const Fund: NextPage = () => {
             ) : (
               <>
                 <div className="flex justify-center w-full">
-                  <span className="font-bold text-lg">Claim URLs</span>
+                  <span className="font-bold text-lg">Fund URLs</span>
                 </div>
                 <div className="mb-4 mt-4">
                   <input
@@ -216,15 +133,23 @@ const Fund: NextPage = () => {
                     onChange={e => setSearchInput(e.target.value)}
                   />
                 </div>
-                <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 border border-base-300 rounded-lg p-4">
                   {displayUrls
                     .filter(url => url.toLowerCase().startsWith(searchInput.toLowerCase()))
                     .map(url => (
-                      <div key={url} className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <span>{url}</span>
-                          <span className="ml-2 text-sm text-gray-500">
-                            [Requests Remaining: {formatRequestsRemaining(urlRequestsRemaining[url] || 0)}]
+                      <div
+                        key={url}
+                        className="flex items-center justify-between pb-4 border-b border-base-300 last:border-b-0 last:pb-0"
+                      >
+                        <div className="flex-1 sm:flex sm:items-center">
+                          <span className="block sm:inline">{url}</span>
+                          <span className="block mt-1 sm:mt-0 sm:ml-2 text-sm text-gray-500">
+                            [Requests Funded:
+                            <span className="hidden sm:inline">
+                              {(urlRequestsRemaining[url] || 0).toLocaleString()}
+                            </span>
+                            <span className="sm:hidden">{formatRequestsRemaining(urlRequestsRemaining[url] || 0)}</span>
+                            ]
                           </span>
                         </div>
                         <button

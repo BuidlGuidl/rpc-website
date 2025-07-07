@@ -20,12 +20,11 @@ const Home: NextPage = () => {
         return;
       }
       try {
-        const docRef = doc(db, firebaseCollection, "userRequestCount");
+        const docRef = doc(db, firebaseCollection, "requestCount");
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          const userData = docSnap.data();
-          const total = Object.values(userData).reduce((sum: number, user: any) => sum + (user.requestsFunded || 0), 0);
-          setTotalRequestsFunded(total);
+          const data = docSnap.data();
+          setTotalRequestsFunded(data.totalFundedRequests || 0);
         }
       } catch (error) {
         console.error("Error fetching total requests:", error);
