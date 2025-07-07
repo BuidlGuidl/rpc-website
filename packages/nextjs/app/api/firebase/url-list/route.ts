@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
     const updatedData = {
       ...currentData,
       [url]: {
+        ...(currentData?.[url] as any), // Preserve existing URL data
         requestsRemaining: ((currentData?.[url] as any)?.requestsRemaining || 0) + requestsToAdd,
       },
       timestamp: Date.now(),
