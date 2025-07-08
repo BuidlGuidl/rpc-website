@@ -121,7 +121,7 @@ const Fund: NextPage = () => {
                     onChange={e => setSearchInput(e.target.value)}
                   />
                 </div>
-                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 border border-base-300 rounded-lg p-4">
+                <div className="space-y-4 max-h-[500px] overflow-y-auto overflow-x-visible pr-2 border border-base-300 rounded-lg p-4">
                   {displayUrls
                     .filter(url => url.toLowerCase().startsWith(searchInput.toLowerCase()))
                     .sort((a, b) => (urlRequestsTotal[b] || 0) - (urlRequestsTotal[a] || 0))
@@ -145,7 +145,7 @@ const Fund: NextPage = () => {
                           </span>
                         </div>
                         <button
-                          className="btn btn-primary btn-sm ml-4 tooltip"
+                          className="btn btn-primary btn-sm ml-4 tooltip tooltip-left tooltip-primary"
                           data-tip="1 USDC = 200,000 requests"
                           onClick={async () => {
                             try {
