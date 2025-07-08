@@ -146,7 +146,7 @@ const Fund: NextPage = () => {
                         </div>
                         <button
                           className="btn btn-primary btn-sm ml-4 tooltip tooltip-left tooltip-primary"
-                          data-tip="1 USDC = 200,000 requests"
+                          data-tip="200,000 requests"
                           onClick={async () => {
                             try {
                               if (!bankContractData?.address) {
