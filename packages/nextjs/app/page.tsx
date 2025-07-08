@@ -8,7 +8,7 @@ import { Header } from "~~/components/Header";
 
 const Home: NextPage = () => {
   // const router = useRouter();
-  const [totalRequestsFunded, setTotalRequestsFunded] = useState(0);
+  const [totalRequestsFunded, setTotalRequestsFunded] = useState<number | string>("...");
   const firebaseCollection = process.env.NEXT_PUBLIC_FIREBASE_COLLECTION;
 
   useEffect(() => {
@@ -82,7 +82,9 @@ const Home: NextPage = () => {
           <section className="bg-[#20F658] p-6 flex justify-center items-center border-l-[1px] lg:border-l-[0px] border-r-[1px] lg:border-r-[1px] border-b-[1px] border-black flex-1">
             <div className="flex flex-col items-center min-w-[300px]">
               <span className="font-bold">Total Requests Funded</span>
-              <span className="font-bold text-2xl mt-2">{totalRequestsFunded.toLocaleString()}</span>
+              <span className="font-bold text-2xl mt-2">
+                {typeof totalRequestsFunded === "number" ? totalRequestsFunded.toLocaleString() : totalRequestsFunded}
+              </span>
             </div>
           </section>
 

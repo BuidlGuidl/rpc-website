@@ -95,7 +95,7 @@ const Fund: NextPage = () => {
             <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
               <span className="font-bold text-lg">💲 Your USDC Balance 💲</span>
               <div className="inline-flex items-center justify-center font-bold text-lg">
-                {Number(formatUnits(yourUsdcBalance ?? 0n, 6)).toFixed(6)}
+                {yourUsdcBalance !== undefined ? Number(formatUnits(yourUsdcBalance, 6)).toFixed(6) : "..."}
                 <span className="ml-1">{yourTokenSymbol}</span>
               </div>
             </div>
