@@ -152,13 +152,13 @@ const Fund: NextPage = () => {
                                 throw new Error("Bank contract address not found");
                               }
 
-                              const requiredAmount = 100000n; // 0.1 USDC (6 decimals)
+                              const requiredAmount = 1000000n; // 1 USDC (6 decimals)
                               const bankAddress = bankContractData.address;
 
                               // Check if user has enough USDC balance
                               if (!yourUsdcBalance || yourUsdcBalance < requiredAmount) {
                                 notification.error(
-                                  "Insufficient USDC balance. Please ensure you have at least 0.1 USDC in your wallet.",
+                                  "Insufficient USDC balance. Please ensure you have at least 1 USDC in your wallet.",
                                 );
                                 return;
                               }
@@ -203,7 +203,7 @@ const Fund: NextPage = () => {
                             }
                           }}
                         >
-                          Fund 0.1 USDC
+                          Fund 1 USDC
                         </button>
                       </div>
                     ))}
