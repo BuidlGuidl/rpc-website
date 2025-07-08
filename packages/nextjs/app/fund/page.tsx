@@ -101,7 +101,7 @@ const Fund: NextPage = () => {
             </div>
           </>
         )}
-        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-16 w-full relative">
+        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-16 w-full relative min-h-[670px]">
           <div className="w-full">
             {!address ? (
               <div className="flex flex-col items-center justify-center h-[400px]">
