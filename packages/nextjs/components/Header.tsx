@@ -8,7 +8,7 @@ import Link from "next/link";
  */
 export const Header = () => {
   return (
-    <header className="container mx-auto pt-10 md:pt-0 border-l border-r border-black md:mt-0">
+    <header className="container mx-auto pt-10 md:pt-0 border-l border-r border-b border-black md:mt-0">
       <div className="w-full mt-0 z-10 p-6 flex items-center">
         <div className="container mx-auto flex items-center">
           <Link href="/" className="w-120 inline-block">

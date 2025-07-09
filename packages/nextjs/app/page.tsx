@@ -37,9 +37,9 @@ const Home: NextPage = () => {
       <Header />
 
       {/* First row */}
-      <div className="flex flex-col lg:flex-row lg:border-x-[1px] mt-0 lg:border-y-[1px] border-black">
+      <div className="flex flex-col lg:flex-row lg:border-x lg:border-b mt-0 border-black">
         {/* Introduction section */}
-        <section className="bg-[#DDDDDD] p-6 lg:p-10 w-full lg:w-[60vw] border-x-[1px] border-y-[1px] border-black lg:border-none">
+        <section className="bg-[#DDDDDD] p-6 lg:p-10 w-full lg:w-[60vw] border-x-[1px] border-b-[1px] border-black lg:border-none">
           <div className="flex flex-col">
             <p className="mt-0">A distributed Mainnet Ethereum RPC operated by a network of BuidlGuidl Clients.</p>
 
@@ -75,7 +75,7 @@ const Home: NextPage = () => {
       </div>
 
       {/* Second row */}
-      <div className="flex flex-col lg:flex-row lg:border-x-[1px] lg:border-b-[1px] mt-0 border-black">
+      <div className="flex flex-col lg:flex-row lg:border-x lg:border-b mt-0 border-black">
         {/* Second row for mobile - flex row to make sections share the row */}
         <div className="flex flex-col flex-1">
           {/* Satellite section */}

@@ -89,7 +89,7 @@ const Fund: NextPage = () => {
   return (
     <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
       <Header />
-      <div className="flex items-center flex-col flex-grow pt-10 lg:border-t-[1px] border-black">
+      <div className="flex items-center flex-col flex-grow pt-10 border-black">
         {address && (
           <>
             <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
