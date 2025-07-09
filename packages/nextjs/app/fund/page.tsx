@@ -130,19 +130,18 @@ const Fund: NextPage = () => {
                         key={url}
                         className="flex items-center justify-between pb-4 border-b border-base-300 last:border-b-0 last:pb-0"
                       >
-                        <div className="flex-1 sm:flex sm:items-center">
-                          <span className="block sm:inline">{url}</span>
-                          <span className="block mt-1 sm:mt-0 sm:ml-2 text-sm text-gray-500">
-                            [Requests Total:
+                        <div className="flex-1">
+                          <div className="mb-1">{url}</div>
+                          <div className="text-sm text-gray-500">
+                            Requests Total:
                             <span className="hidden sm:inline">{(urlRequestsTotal[url] || 0).toLocaleString()}</span>
                             <span className="sm:hidden">{formatRequestsRemaining(urlRequestsTotal[url] || 0)}</span>
-                            {" | Funded:"}
+                            {" | Remaining Funded:"}
                             <span className="hidden sm:inline">
                               {(urlRequestsRemaining[url] || 0).toLocaleString()}
                             </span>
                             <span className="sm:hidden">{formatRequestsRemaining(urlRequestsRemaining[url] || 0)}</span>
-                            ]
-                          </span>
+                          </div>
                         </div>
                         <button
                           className="btn btn-primary btn-sm ml-4 tooltip tooltip-left tooltip-primary"
