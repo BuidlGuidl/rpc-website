@@ -101,7 +101,7 @@ const Fund: NextPage = () => {
             </div>
           </>
         )}
-        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-16 w-full relative min-h-[670px]">
+        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-16 w-full relative">
           <div className="w-full">
             {!address ? (
               <div className="flex flex-col items-center justify-center h-[400px]">
@@ -121,7 +121,7 @@ const Fund: NextPage = () => {
                     onChange={e => setSearchInput(e.target.value)}
                   />
                 </div>
-                <div className="space-y-4 max-h-[500px] overflow-y-auto overflow-x-visible pr-2 border border-base-300 rounded-lg p-4">
+                <div className="space-y-4 border border-base-300 rounded-lg p-4">
                   {displayUrls
                     .filter(url => url.toLowerCase().startsWith(searchInput.toLowerCase()))
                     .sort((a, b) => (urlRequestsTotal[b] || 0) - (urlRequestsTotal[a] || 0))
