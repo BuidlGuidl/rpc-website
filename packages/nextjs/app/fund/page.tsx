@@ -92,7 +92,7 @@ const Fund: NextPage = () => {
       <div className="flex items-center flex-col flex-grow pt-10 border-black">
         {address && (
           <>
-            <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-6 w-full max-w-lg">
+            <div className="flex flex-col items-center bg-base-100 border-black rounded-none p-6 mt-6 w-full max-w-lg">
               <span className="font-bold text-lg">💲 Your USDC Balance 💲</span>
               <div className="inline-flex items-center justify-center font-bold text-lg">
                 {yourUsdcBalance !== undefined ? Number(formatUnits(yourUsdcBalance, 6)).toFixed(6) : "..."}
@@ -101,7 +101,7 @@ const Fund: NextPage = () => {
             </div>
           </>
         )}
-        <div className="flex flex-col items-center bg-base-100 shadow-lg shadow-secondary border-8 border-secondary rounded-xl p-6 mt-16 w-full relative">
+        <div className="flex flex-col items-center bg-base-100 border-black rounded-none p-6 mt-16 w-full relative">
           <div className="w-full">
             {!address ? (
               <div className="flex flex-col items-center justify-center h-[400px]">
@@ -116,12 +116,12 @@ const Fund: NextPage = () => {
                   <input
                     type="text"
                     placeholder="Search URLs..."
-                    className="input input-bordered w-full"
+                    className="input input-bordered w-full rounded-none"
                     value={searchInput}
                     onChange={e => setSearchInput(e.target.value)}
                   />
                 </div>
-                <div className="space-y-4 border border-base-300 rounded-lg p-4">
+                <div className="space-y-4 border border-base-300 rounded-none p-4">
                   {displayUrls
                     .filter(url => url.toLowerCase().startsWith(searchInput.toLowerCase()))
                     .sort((a, b) => (urlRequestsTotal[b] || 0) - (urlRequestsTotal[a] || 0))
@@ -144,7 +144,7 @@ const Fund: NextPage = () => {
                           </div>
                         </div>
                         <button
-                          className="btn btn-primary btn-sm ml-4 tooltip tooltip-left tooltip-primary"
+                          className="btn btn-primary btn-sm rounded-none ml-4 tooltip tooltip-left tooltip-primary"
                           data-tip="200,000 requests"
                           onClick={async () => {
                             try {
