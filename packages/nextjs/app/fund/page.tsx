@@ -91,10 +91,10 @@ const Fund: NextPage = () => {
   return (
     <div className="container mx-auto px-0">
       <Header />
-      <div className="flex items-center flex-col flex-grow pt-10 border-black">
+      <div className="flex items-center flex-col flex-grow border-black">
         {address && (
           <>
-            <div className="flex flex-col items-center bg-base-100 border-black rounded-none p-6 mt-6 w-full max-w-lg">
+            <div className="flex flex-col items-center bg-base-100 border-x-[1px] border-b-[1px] border-black rounded-none p-6 w-full">
               <span className="font-bold text-lg">💲 Your USDC Balance 💲</span>
               <div className="inline-flex items-center justify-center font-bold text-lg">
                 {yourUsdcBalance !== undefined ? Number(formatUnits(yourUsdcBalance, 6)).toFixed(6) : "..."}
@@ -103,7 +103,7 @@ const Fund: NextPage = () => {
             </div>
           </>
         )}
-        <div className="flex flex-col items-center bg-base-100 border-black rounded-none py-6 px-2 xl:px-6 lg:px-6 md:px-6 mt-16 w-full relative">
+        <div className="flex flex-col items-center bg-base-100 border-x-[1px] border-b-[1px] border-black rounded-none py-6 px-2 xl:px-6 lg:px-6 md:px-6 w-full relative">
           <div className="w-full">
             {!address ? (
               <div className="flex flex-col items-center justify-center h-[400px]">
@@ -118,7 +118,7 @@ const Fund: NextPage = () => {
                   <input
                     type="text"
                     placeholder="Search URLs..."
-                    className="input input-bordered w-full border-base-300 rounded-none"
+                    className="input input-bordered w-full border-grey rounded-none"
                     value={searchInput}
                     onChange={e => setSearchInput(e.target.value)}
                   />

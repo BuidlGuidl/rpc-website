@@ -2,11 +2,17 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { hardhat } from "viem/chains";
+import { FaucetButton, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
+import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 
 /**
  * Site header
  */
 export const Header = () => {
+  const { targetNetwork } = useTargetNetwork();
+  const isLocalNetwork = targetNetwork.id === hardhat.id;
+
   return (
     <header className="container mx-auto pt-10 md:pt-0 border-l border-r border-b border-black md:mt-0">
       <div className="w-full mt-0 z-10 p-6 flex items-center">
@@ -23,6 +29,11 @@ export const Header = () => {
                 Fund
               </Link>
             </div>
+          </div>
+          {/* Wallet connect button and faucet button */}
+          <div className="flex items-center gap-2">
+            <RainbowKitCustomConnectButton />
+            {isLocalNetwork && <FaucetButton />}
           </div>
         </div>
       </div>
