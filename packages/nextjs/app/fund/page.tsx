@@ -107,7 +107,7 @@ const Fund: NextPage = () => {
           <div className="w-full">
             {!address ? (
               <div className="flex flex-col items-center justify-center h-[400px]">
-                <p className="text-xl font-semibold mb-4">Please connect your wallet to view and claim URLs</p>
+                <p className="text-xl font-semibold mb-4">Please connect your wallet to view and fund URLs</p>
               </div>
             ) : (
               <>
@@ -125,7 +125,7 @@ const Fund: NextPage = () => {
                 </div>
                 <div className="space-y-4 border border-base-300 rounded-none p-4">
                   {displayUrls
-                    .filter(url => url.toLowerCase().startsWith(searchInput.toLowerCase()))
+                    .filter(url => url.toLowerCase().includes(searchInput.toLowerCase()))
                     .sort((a, b) => (urlRequestsTotal[b] || 0) - (urlRequestsTotal[a] || 0))
                     .map(url => (
                       <div
