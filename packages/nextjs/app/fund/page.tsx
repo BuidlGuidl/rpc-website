@@ -6,7 +6,7 @@ import { useInterval } from "usehooks-ts";
 import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
 import { Header } from "~~/components/Header";
-import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
 const requestsPerUsdc = 200000; // 200,000 requests per 1 USDC
@@ -25,8 +25,10 @@ const Fund: NextPage = () => {
     throw new Error("Firebase collection name is not defined in environment variables");
   }
 
-  const { data: bankContractData } = useDeployedContractInfo("Bank");
   const { writeContractAsync: writeUsdcAsync } = useScaffoldWriteContract("USDC");
+
+  // Hardcoded bank address
+  const bankAddress = "0x8c4f1FB34565650e176d2cd2761B3be10Ca8d35b";
 
   // Reduce polling frequency for contract reads
   const { data: yourTokenSymbol } = useScaffoldReadContract({
@@ -87,7 +89,7 @@ const Fund: NextPage = () => {
   useInterval(refetchUsdcBalance, 10000);
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
+    <div className="container mx-auto px-0">
       <Header />
       <div className="flex items-center flex-col flex-grow pt-10 border-black">
         {address && (
@@ -101,7 +103,7 @@ const Fund: NextPage = () => {
             </div>
           </>
         )}
-        <div className="flex flex-col items-center bg-base-100 border-black rounded-none p-6 mt-16 w-full relative">
+        <div className="flex flex-col items-center bg-base-100 border-black rounded-none py-6 px-2 xl:px-6 lg:px-6 md:px-6 mt-16 w-full relative">
           <div className="w-full">
             {!address ? (
               <div className="flex flex-col items-center justify-center h-[400px]">
@@ -116,7 +118,7 @@ const Fund: NextPage = () => {
                   <input
                     type="text"
                     placeholder="Search URLs..."
-                    className="input input-bordered w-full rounded-none"
+                    className="input input-bordered w-full border-base-300 rounded-none"
                     value={searchInput}
                     onChange={e => setSearchInput(e.target.value)}
                   />
@@ -130,8 +132,8 @@ const Fund: NextPage = () => {
                         key={url}
                         className="flex items-center justify-between pb-4 border-b border-base-300 last:border-b-0 last:pb-0"
                       >
-                        <div className="flex-1">
-                          <div className="mb-1">{url}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="mb-1 break-words overflow-wrap-anywhere">{url}</div>
                           <div className="text-sm text-gray-500">
                             Requests Total:
                             <span className="hidden sm:inline">{(urlRequestsTotal[url] || 0).toLocaleString()}</span>
@@ -148,12 +150,7 @@ const Fund: NextPage = () => {
                           data-tip="200,000 requests"
                           onClick={async () => {
                             try {
-                              if (!bankContractData?.address) {
-                                throw new Error("Bank contract address not found");
-                              }
-
                               const requiredAmount = 1000000n; // 1 USDC (6 decimals)
-                              const bankAddress = bankContractData.address;
 
                               // Check if user has enough USDC balance
                               if (!yourUsdcBalance || yourUsdcBalance < requiredAmount) {
