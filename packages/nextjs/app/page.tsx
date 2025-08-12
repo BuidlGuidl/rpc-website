@@ -3,6 +3,7 @@
 // import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { NextPage } from "next";
 import { useInterval } from "usehooks-ts";
 import { formatUnits } from "viem";
@@ -115,7 +116,18 @@ const Home: NextPage = () => {
         {/* Introduction section */}
         <section className="bg-[#DDDDDD] p-6 lg:p-10 w-full lg:w-[60vw] border-x-[1px] border-b-[1px] border-black lg:border-none">
           <div className="flex flex-col">
-            <p className="mt-0">A distributed Mainnet Ethereum RPC operated by a network of BuidlGuidl Clients.</p>
+            <p className="mt-0">
+              A distributed Mainnet Ethereum RPC operated by a network of{" "}
+              <a
+                href="https://rpc.buidlguidl.com/"
+                target="_blank"
+                rel="noreferrer"
+                className="link hover:text-[#FF66F9] transition-colors cursor-pointer"
+              >
+                BuidlGuidl Clients
+              </a>
+              .
+            </p>
 
             <div className="bg-black p-2 lg:p-4 text-white text-sm">
               <p className="m-2">https://mainnet.rpc.buidlguidl.com</p>
@@ -126,11 +138,11 @@ const Home: NextPage = () => {
         {/* Second row for mobile - flex row to make sections share the row */}
         <div className="flex flex-col flex-1">
           {/* Satellite section */}
-          <section className="bg-[#20F658] p-6 flex justify-center items-center border-r-[1px] border-l-[1px] border-b-[1px] border-black lg:border-r-0 flex-1 lg:min-w-[436px]">
+          <section className="bg-[#20F658] p-6 lg:p-6 flex justify-center items-center border-r-[1px] border-l-[1px] border-b-[1px] border-black lg:border-r-0 flex-1 lg:min-w-[436px] max-h-[300px] lg:max-h-none">
             <Image
               src="/satellite-10fps.gif"
               alt="satellite"
-              className="object-contain max-h-full"
+              className="object-contain w-auto h-auto max-h-[250px] lg:max-h-full"
               width={436}
               height={535}
             />
@@ -153,7 +165,7 @@ const Home: NextPage = () => {
         {/* Second row for mobile - flex row to make sections share the row */}
         <div className="flex flex-col flex-1">
           {/* Satellite section */}
-          <section className="bg-[#20F658] p-6 flex justify-center items-center border-l-[1px] lg:border-l-[0px] border-r-[1px] lg:border-r-[1px] border-b-[1px] border-black flex-1">
+          <section className="bg-[#20F658] p-6 flex justify-center items-center border-l-[1px] lg:border-l-[0px] border-r-[1px] lg:border-r-[1px] border-black flex-1">
             <div className="flex flex-col items-center min-w-[300px]">
               <span className="font-bold">Total Requests Funded</span>
               <span className="font-bold text-2xl mt-2">
@@ -161,140 +173,144 @@ const Home: NextPage = () => {
               </span>
             </div>
           </section>
-
-          {/* Button section */}
-          <section className="bg-[#DDDDDD] flex justify-center border-x-[1px] border-b-[0px] lg:border-l-[0px] border-black lg:border-b-0">
-            <button
-              onClick={() => (window.location.href = "/fund")}
-              className="bg-white h-16 w-full flex items-center justify-center hover:bg-[#FF66F9] transition-colors"
-            >
-              <p>Donate USDC for Requests</p>
-            </button>
-          </section>
         </div>
 
         {/* Introduction section */}
-        <section className="bg-[#DDDDDD] p-6 lg:p-10 w-full lg:w-[60vw] border-x-[1px] border-y-[1px] border-black lg:border-none">
+        <section className="bg-black text-white p-6 lg:p-10 w-full lg:w-[60vw] border-x-[1px] border-y-[1px] border-black lg:border-none">
           <div className="flex flex-col">
-            <p className="mt-0">
-              Feeling generous? Donate USDC to fund BuidlGuidl RPC requests. 1 USDC will pay for 200,000 requests.
-            </p>
+            <ConnectButton.Custom>
+              {({ account, chain, openConnectModal, mounted }) => {
+                const connected = mounted && account && chain;
+
+                return (
+                  <p className="mt-0">
+                    Feeling generous? Donate USDC to fund BuidlGuidl RPC requests. 1 USDC will pay for 200,000 requests.
+                    {!connected && (
+                      <>
+                        {" "}
+                        <button
+                          onClick={openConnectModal}
+                          className="underline hover:text-[#FF66F9] transition-colors cursor-pointer"
+                        >
+                          Connect your wallet to donate requests.
+                        </button>
+                      </>
+                    )}
+                  </p>
+                );
+              }}
+            </ConnectButton.Custom>
           </div>
         </section>
       </div>
 
       {/* Fund URLs Section */}
-      <div className="flex flex-col items-center bg-base-100 border-x-[1px] border-b-[1px] border-black rounded-none py-6 w-full relative">
-        <div className="w-full">
-          {!address ? (
-            <div className="flex flex-col items-center justify-center h-[400px]">
-              <p className="text-xl font-semibold mb-4">Please connect your wallet to view and fund URLs</p>
+      {address && (
+        <div className="flex flex-col items-center bg-base-100 border-x-[1px] border-b-[1px] border-black rounded-none py-6 w-full relative">
+          <div className="w-full">
+            <div className="flex flex-col items-center w-full">
+              <span className="font-bold text-lg">Fund URLs</span>
+              <div className="flex items-center justify-center font-bold text-lg mt-2">
+                <span className="mr-2">Your USDC Balance:</span>
+                <span>
+                  {yourUsdcBalance !== undefined ? Number(formatUnits(yourUsdcBalance, 6)).toFixed(2) : "..."}
+                </span>
+                <span className="ml-1">{yourTokenSymbol}</span>
+              </div>
             </div>
-          ) : (
-            <>
-              <div className="flex flex-col items-center w-full">
-                <span className="font-bold text-lg">Fund URLs</span>
-                <div className="flex items-center justify-center font-bold text-lg mt-2">
-                  <span className="mr-2">Your USDC Balance:</span>
-                  <span>
-                    {yourUsdcBalance !== undefined ? Number(formatUnits(yourUsdcBalance, 6)).toFixed(2) : "..."}
-                  </span>
-                  <span className="ml-1">{yourTokenSymbol}</span>
-                </div>
-              </div>
-              <div className="m-4">
-                <input
-                  type="text"
-                  placeholder="Search URLs..."
-                  className="input input-bordered w-full border-grey border-2 rounded-none"
-                  value={searchInput}
-                  onChange={e => setSearchInput(e.target.value)}
-                />
-              </div>
-              <div className="space-y-4 border border-base-300 rounded-none p-4">
-                {displayUrls
-                  .filter(url => url.toLowerCase().includes(searchInput.toLowerCase()))
-                  .sort((a, b) => (urlRequestsTotal[b] || 0) - (urlRequestsTotal[a] || 0))
-                  .map(url => (
-                    <div
-                      key={url}
-                      className="flex items-center justify-between pb-4 border-b border-base-300 last:border-b-0 last:pb-0"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="mb-1 break-words overflow-wrap-anywhere">{url}</div>
-                        <div className="text-sm text-gray-500">
-                          Requests Total:
-                          <span className="hidden sm:inline">{(urlRequestsTotal[url] || 0).toLocaleString()}</span>
-                          <span className="sm:hidden">{formatRequestsRemaining(urlRequestsTotal[url] || 0)}</span>
-                          {" | Remaining Funded:"}
-                          <span className="hidden sm:inline">{(urlRequestsRemaining[url] || 0).toLocaleString()}</span>
-                          <span className="sm:hidden">{formatRequestsRemaining(urlRequestsRemaining[url] || 0)}</span>
-                        </div>
+            <div className="m-4">
+              <input
+                type="text"
+                placeholder="Search URLs..."
+                className="input input-bordered w-full border-grey border-2 rounded-none"
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+              />
+            </div>
+            <div className="border-t border-[#DDDDDD] mx-4"></div>
+            <div className="space-y-4 border-l border-r border-b border-base-300 rounded-none p-4">
+              {displayUrls
+                .filter(url => url.toLowerCase().includes(searchInput.toLowerCase()))
+                .sort((a, b) => (urlRequestsTotal[b] || 0) - (urlRequestsTotal[a] || 0))
+                .map(url => (
+                  <div
+                    key={url}
+                    className="flex items-center justify-between pb-4 border-b border-[#DDDDDD] last:border-b-0 last:pb-0"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="mb-1 break-words overflow-wrap-anywhere">{url}</div>
+                      <div className="text-sm text-gray-500">
+                        Requests Total:
+                        <span className="hidden sm:inline">{(urlRequestsTotal[url] || 0).toLocaleString()}</span>
+                        <span className="sm:hidden">{formatRequestsRemaining(urlRequestsTotal[url] || 0)}</span>
+                        {" | Remaining Funded:"}
+                        <span className="hidden sm:inline">{(urlRequestsRemaining[url] || 0).toLocaleString()}</span>
+                        <span className="sm:hidden">{formatRequestsRemaining(urlRequestsRemaining[url] || 0)}</span>
                       </div>
-                      <button
-                        className="btn btn-primary btn-sm rounded-none ml-4 tooltip tooltip-left tooltip-primary"
-                        data-tip="200,000 requests"
-                        onClick={async () => {
-                          try {
-                            const requiredAmount = 1000000n; // 1 USDC (6 decimals)
-
-                            // Check if user has enough USDC balance
-                            if (!yourUsdcBalance || yourUsdcBalance < requiredAmount) {
-                              notification.error(
-                                "Insufficient USDC balance. Please ensure you have at least 1 USDC in your wallet.",
-                              );
-                              return;
-                            }
-
-                            // Proceed with transfer
-                            await writeUsdcAsync({
-                              functionName: "transfer",
-                              args: [bankAddress, requiredAmount],
-                            });
-
-                            // Update Firebase with new funded requests count for this specific URL
-                            const requestsToAdd = (Number(requiredAmount) * requestsPerUsdc) / 1000000; // Convert USDC to funded requests
-
-                            const updateResponse = await fetch(
-                              `/api/firebase/url-list?collection=${firebaseCollection}`,
-                              {
-                                method: "POST",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({
-                                  url,
-                                  requestsToAdd,
-                                }),
-                              },
-                            );
-
-                            if (!updateResponse.ok) {
-                              throw new Error("Failed to update URL requests");
-                            }
-
-                            // Update the local state to reflect the new total
-                            setUrlRequestsRemaining(prev => ({
-                              ...prev,
-                              [url]: prev[url] + requestsToAdd,
-                            }));
-                          } catch (err) {
-                            console.error("Error in fund transfer:", err);
-                            if (err instanceof Error) {
-                              notification.error(err.message);
-                            }
-                          }
-                        }}
-                      >
-                        Fund 1 USDC
-                      </button>
                     </div>
-                  ))}
-              </div>
-            </>
-          )}
+                    <button
+                      className="btn btn-primary btn-sm rounded-none ml-4 tooltip tooltip-left tooltip-primary"
+                      data-tip="200,000 requests"
+                      onClick={async () => {
+                        try {
+                          const requiredAmount = 1000000n; // 1 USDC (6 decimals)
+
+                          // Check if user has enough USDC balance
+                          if (!yourUsdcBalance || yourUsdcBalance < requiredAmount) {
+                            notification.error(
+                              "Insufficient USDC balance. Please ensure you have at least 1 USDC in your wallet.",
+                            );
+                            return;
+                          }
+
+                          // Proceed with transfer
+                          await writeUsdcAsync({
+                            functionName: "transfer",
+                            args: [bankAddress, requiredAmount],
+                          });
+
+                          // Update Firebase with new funded requests count for this specific URL
+                          const requestsToAdd = (Number(requiredAmount) * requestsPerUsdc) / 1000000; // Convert USDC to funded requests
+
+                          const updateResponse = await fetch(
+                            `/api/firebase/url-list?collection=${firebaseCollection}`,
+                            {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                              },
+                              body: JSON.stringify({
+                                url,
+                                requestsToAdd,
+                              }),
+                            },
+                          );
+
+                          if (!updateResponse.ok) {
+                            throw new Error("Failed to update URL requests");
+                          }
+
+                          // Update the local state to reflect the new total
+                          setUrlRequestsRemaining(prev => ({
+                            ...prev,
+                            [url]: prev[url] + requestsToAdd,
+                          }));
+                        } catch (err) {
+                          console.error("Error in fund transfer:", err);
+                          if (err instanceof Error) {
+                            notification.error(err.message);
+                          }
+                        }
+                      }}
+                    >
+                      Fund 1 USDC
+                    </button>
+                  </div>
+                ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
