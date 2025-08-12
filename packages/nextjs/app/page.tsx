@@ -56,8 +56,6 @@ const Home: NextPage = () => {
 
   // Load available URLs from Firebase
   const fetchUserData = useCallback(async () => {
-    if (!address) return;
-
     try {
       const response = await fetch(`/api/firebase/url-list?collection=${firebaseCollection}`);
       if (!response.ok) {
@@ -79,7 +77,7 @@ const Home: NextPage = () => {
       setUrlRequestsRemaining({});
       setUrlRequestsTotal({});
     }
-  }, [address, firebaseCollection]);
+  }, [firebaseCollection]);
 
   useEffect(() => {
     const fetchTotalRequests = async () => {
@@ -202,11 +200,11 @@ const Home: NextPage = () => {
       </div>
 
       {/* Fund URLs Section */}
-      {address && (
-        <div className="flex flex-col items-center bg-base-100 border-x-[1px] border-b-[1px] border-black rounded-none py-6 w-full relative">
-          <div className="w-full">
-            <div className="flex flex-col items-center w-full">
-              <span className="font-bold text-xl">Fund URLs</span>
+      <div className="flex flex-col items-center bg-base-100 border-x-[1px] border-b-[1px] border-black rounded-none py-6 w-full relative">
+        <div className="w-full">
+          <div className="flex flex-col items-center w-full">
+            <span className="font-bold text-xl">Fund URLs</span>
+            {address && (
               <div className="flex items-center justify-center font-bold mt-2">
                 <span className="mr-2">Your USDC Balance:</span>
                 <span>
@@ -214,100 +212,100 @@ const Home: NextPage = () => {
                 </span>
                 <span className="ml-1">{yourTokenSymbol}</span>
               </div>
-            </div>
-            <div className="m-4">
-              <input
-                type="text"
-                placeholder="Search URLs..."
-                className="input input-bordered w-full border-black border-1 rounded-none focus:border-black focus:outline-none"
-                value={searchInput}
-                onChange={e => setSearchInput(e.target.value)}
-              />
-            </div>
-            <div className="border-t border-[#DDDDDD] mx-4"></div>
-            <div className="space-y-4 border-l border-r border-b border-base-300 rounded-none p-4">
-              {displayUrls
-                .filter(url => url.toLowerCase().includes(searchInput.toLowerCase()))
-                .sort((a, b) => (urlRequestsTotal[b] || 0) - (urlRequestsTotal[a] || 0))
-                .map(url => (
-                  <div
-                    key={url}
-                    className="flex items-center justify-between pb-4 border-b border-[#DDDDDD] last:border-b-0 last:pb-0"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="mb-1 break-words overflow-wrap-anywhere">{url}</div>
-                      <div className="text-sm text-gray-500">
-                        Requests Total:
-                        <span className="hidden sm:inline">{(urlRequestsTotal[url] || 0).toLocaleString()}</span>
-                        <span className="sm:hidden">{formatRequestsRemaining(urlRequestsTotal[url] || 0)}</span>
-                        {" | Remaining Funded:"}
-                        <span className="hidden sm:inline">{(urlRequestsRemaining[url] || 0).toLocaleString()}</span>
-                        <span className="sm:hidden">{formatRequestsRemaining(urlRequestsRemaining[url] || 0)}</span>
-                      </div>
+            )}
+          </div>
+          <div className="m-4">
+            <input
+              type="text"
+              placeholder="Search URLs..."
+              className="input input-bordered w-full border-black border-1 rounded-none focus:border-black focus:outline-none"
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+            />
+          </div>
+          <div className="border-t border-[#DDDDDD] mx-4"></div>
+          <div className="space-y-4 border-l border-r border-b border-base-300 rounded-none p-4">
+            {displayUrls
+              .filter(url => url.toLowerCase().includes(searchInput.toLowerCase()))
+              .sort((a, b) => (urlRequestsTotal[b] || 0) - (urlRequestsTotal[a] || 0))
+              .map(url => (
+                <div
+                  key={url}
+                  className="flex items-center justify-between pb-4 border-b border-[#DDDDDD] last:border-b-0 last:pb-0"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="mb-1 break-words overflow-wrap-anywhere">{url}</div>
+                    <div className="text-sm text-gray-500">
+                      Requests Total:
+                      <span className="hidden sm:inline">{(urlRequestsTotal[url] || 0).toLocaleString()}</span>
+                      <span className="sm:hidden">{formatRequestsRemaining(urlRequestsTotal[url] || 0)}</span>
+                      {" | Remaining Funded:"}
+                      <span className="hidden sm:inline">{(urlRequestsRemaining[url] || 0).toLocaleString()}</span>
+                      <span className="sm:hidden">{formatRequestsRemaining(urlRequestsRemaining[url] || 0)}</span>
                     </div>
-                    <button
-                      className="btn btn-primary btn-sm border-black hover:border-black rounded-none ml-4 tooltip tooltip-left [&[data-tip]]:before:bg-black [&[data-tip]]:before:text-white [&[data-tip]]:before:transition-all [&[data-tip]]:before:duration-150 bg-white hover:bg-[#FF66F9] transition-colors"
-                      data-tip="200,000 requests"
-                      onClick={async () => {
-                        try {
-                          const requiredAmount = 1000000n; // 1 USDC (6 decimals)
-
-                          // Check if user has enough USDC balance
-                          if (!yourUsdcBalance || yourUsdcBalance < requiredAmount) {
-                            notification.error(
-                              "Insufficient USDC balance. Please ensure you have at least 1 USDC in your wallet.",
-                            );
-                            return;
-                          }
-
-                          // Proceed with transfer
-                          await writeUsdcAsync({
-                            functionName: "transfer",
-                            args: [bankAddress, requiredAmount],
-                          });
-
-                          // Update Firebase with new funded requests count for this specific URL
-                          const requestsToAdd = (Number(requiredAmount) * requestsPerUsdc) / 1000000; // Convert USDC to funded requests
-
-                          const updateResponse = await fetch(
-                            `/api/firebase/url-list?collection=${firebaseCollection}`,
-                            {
-                              method: "POST",
-                              headers: {
-                                "Content-Type": "application/json",
-                              },
-                              body: JSON.stringify({
-                                url,
-                                requestsToAdd,
-                              }),
-                            },
-                          );
-
-                          if (!updateResponse.ok) {
-                            throw new Error("Failed to update URL requests");
-                          }
-
-                          // Update the local state to reflect the new total
-                          setUrlRequestsRemaining(prev => ({
-                            ...prev,
-                            [url]: prev[url] + requestsToAdd,
-                          }));
-                        } catch (err) {
-                          console.error("Error in fund transfer:", err);
-                          if (err instanceof Error) {
-                            notification.error(err.message);
-                          }
-                        }
-                      }}
-                    >
-                      Fund 1 USDC
-                    </button>
                   </div>
-                ))}
-            </div>
+                  <button
+                    className={`btn btn-primary btn-sm border-black hover:border-black rounded-none ml-4 tooltip tooltip-left [&[data-tip]]:before:bg-black [&[data-tip]]:before:text-white [&[data-tip]]:before:transition-all [&[data-tip]]:before:duration-150 transition-colors ${
+                      !address ? "!bg-white text-gray-500 cursor-not-allowed" : "bg-white hover:bg-[#FF66F9]"
+                    }`}
+                    data-tip="200,000 requests"
+                    disabled={!address}
+                    onClick={async () => {
+                      try {
+                        const requiredAmount = 1000000n; // 1 USDC (6 decimals)
+
+                        // Check if user has enough USDC balance
+                        if (!yourUsdcBalance || yourUsdcBalance < requiredAmount) {
+                          notification.error(
+                            "Insufficient USDC balance. Please ensure you have at least 1 USDC in your wallet.",
+                          );
+                          return;
+                        }
+
+                        // Proceed with transfer
+                        await writeUsdcAsync({
+                          functionName: "transfer",
+                          args: [bankAddress, requiredAmount],
+                        });
+
+                        // Update Firebase with new funded requests count for this specific URL
+                        const requestsToAdd = (Number(requiredAmount) * requestsPerUsdc) / 1000000; // Convert USDC to funded requests
+
+                        const updateResponse = await fetch(`/api/firebase/url-list?collection=${firebaseCollection}`, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            url,
+                            requestsToAdd,
+                          }),
+                        });
+
+                        if (!updateResponse.ok) {
+                          throw new Error("Failed to update URL requests");
+                        }
+
+                        // Update the local state to reflect the new total
+                        setUrlRequestsRemaining(prev => ({
+                          ...prev,
+                          [url]: prev[url] + requestsToAdd,
+                        }));
+                      } catch (err) {
+                        console.error("Error in fund transfer:", err);
+                        if (err instanceof Error) {
+                          notification.error(err.message);
+                        }
+                      }
+                    }}
+                  >
+                    Fund 1 USDC
+                  </button>
+                </div>
+              ))}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
