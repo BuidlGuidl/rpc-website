@@ -204,19 +204,23 @@ const Home: NextPage = () => {
       </div>
 
       {/* Fund URLs Section */}
-      <div className="flex flex-col items-center bg-base-100 border-x-[1px] border-b-[1px] border-black rounded-none py-6 w-full relative">
+      <div className="flex flex-col items-center bg-base-100 border-x-[1px] border-b-[1px] border-black rounded-none py-6 pt-8 w-full relative">
         <div className="w-full">
           <div className="flex flex-col items-center w-full">
             <span className="font-bold text-xl">Fund URLs</span>
-            {address && (
-              <div className="flex items-center justify-center font-bold mt-2">
-                <span className="mr-2">Your USDC Balance:</span>
-                <span>
-                  {yourUsdcBalance !== undefined ? Number(formatUnits(yourUsdcBalance, 6)).toFixed(2) : "..."}
-                </span>
-                <span className="ml-1">{yourTokenSymbol}</span>
-              </div>
-            )}
+            <div className="flex items-center justify-center font-bold mt-2">
+              {address ? (
+                <>
+                  <span className="mr-2">Your USDC Balance:</span>
+                  <span>
+                    {yourUsdcBalance !== undefined ? Number(formatUnits(yourUsdcBalance, 6)).toFixed(2) : "..."}
+                  </span>
+                  <span className="ml-1">{yourTokenSymbol}</span>
+                </>
+              ) : (
+                <span>&nbsp;</span>
+              )}
+            </div>
           </div>
           <div className="m-4">
             <input
