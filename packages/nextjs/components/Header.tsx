@@ -13,7 +13,7 @@ export const Header = () => {
   const isLocalNetwork = targetNetwork.id === hardhat.id;
 
   return (
-    <header className="container mx-auto pt-10 md:pt-0 border-l border-r border-b border-black md:mt-0">
+    <header className="container mx-auto border-l border-r border-b border-black md:mt-0">
       <div className="w-full mt-0 z-10 p-6 flex items-center min-h-[120px]">
         <div className="container mx-auto flex items-center justify-between">
           <Image className="w-40 inline-block" src="rpc-logo.svg" alt="logo" width={260} height={78} />

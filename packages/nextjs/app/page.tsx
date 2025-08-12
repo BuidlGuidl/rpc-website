@@ -119,10 +119,10 @@ const Home: NextPage = () => {
             <p className="mt-0">
               A distributed Mainnet Ethereum RPC operated by a network of{" "}
               <a
-                href="https://rpc.buidlguidl.com/"
+                href="https://client.buidlguidl.com/"
                 target="_blank"
                 rel="noreferrer"
-                className="link hover:text-[#FF66F9] transition-colors cursor-pointer"
+                className="link hover:text-black cursor-pointer"
               >
                 BuidlGuidl Clients
               </a>
@@ -188,10 +188,7 @@ const Home: NextPage = () => {
                     {!connected && (
                       <>
                         {" "}
-                        <button
-                          onClick={openConnectModal}
-                          className="underline hover:text-[#FF66F9] transition-colors cursor-pointer"
-                        >
+                        <button onClick={openConnectModal} className="underline hover:text-white cursor-pointer">
                           Connect your wallet to donate requests.
                         </button>
                       </>
@@ -209,8 +206,8 @@ const Home: NextPage = () => {
         <div className="flex flex-col items-center bg-base-100 border-x-[1px] border-b-[1px] border-black rounded-none py-6 w-full relative">
           <div className="w-full">
             <div className="flex flex-col items-center w-full">
-              <span className="font-bold text-lg">Fund URLs</span>
-              <div className="flex items-center justify-center font-bold text-lg mt-2">
+              <span className="font-bold text-xl">Fund URLs</span>
+              <div className="flex items-center justify-center font-bold mt-2">
                 <span className="mr-2">Your USDC Balance:</span>
                 <span>
                   {yourUsdcBalance !== undefined ? Number(formatUnits(yourUsdcBalance, 6)).toFixed(2) : "..."}
@@ -222,7 +219,7 @@ const Home: NextPage = () => {
               <input
                 type="text"
                 placeholder="Search URLs..."
-                className="input input-bordered w-full border-grey border-2 rounded-none"
+                className="input input-bordered w-full border-black border-1 rounded-none focus:border-black focus:outline-none"
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
               />
@@ -249,7 +246,7 @@ const Home: NextPage = () => {
                       </div>
                     </div>
                     <button
-                      className="btn btn-primary btn-sm rounded-none ml-4 tooltip tooltip-left tooltip-primary"
+                      className="btn btn-primary btn-sm border-black hover:border-black rounded-none ml-4 tooltip tooltip-left [&[data-tip]]:before:bg-black [&[data-tip]]:before:text-white [&[data-tip]]:before:transition-all [&[data-tip]]:before:duration-150 bg-white hover:bg-[#FF66F9] transition-colors"
                       data-tip="200,000 requests"
                       onClick={async () => {
                         try {
