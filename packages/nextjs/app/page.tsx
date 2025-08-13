@@ -141,13 +141,17 @@ const Home: NextPage = () => {
         <div className="flex flex-col flex-1">
           {/* Satellite section */}
           <section className="bg-[#20F658] p-6 lg:p-6 flex justify-center items-center border-r-[1px] border-l-[1px] border-b-[1px] border-black lg:border-r-0 flex-1 lg:min-w-[436px] max-h-[300px] lg:max-h-none">
-            <Image
-              src="/satellite-10fps.gif"
-              alt="satellite"
-              className="object-contain w-auto h-auto max-h-[250px] lg:max-h-full"
-              width={436}
-              height={535}
-            />
+            <div className="relative w-full h-full flex justify-center items-center" style={{ aspectRatio: "436/535" }}>
+              <Image
+                src="/satellite-10fps.gif"
+                alt="satellite"
+                className="object-contain max-h-[250px] lg:max-h-full"
+                width={436}
+                height={535}
+                priority
+                sizes="(max-width: 1024px) 250px, 535px"
+              />
+            </div>
           </section>
 
           {/* Button section */}
