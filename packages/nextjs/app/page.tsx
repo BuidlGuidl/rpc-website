@@ -1,24 +1,135 @@
 "use client";
 
+// import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { NextPage } from "next";
+import { useInterval } from "usehooks-ts";
+import { formatUnits } from "viem";
+import { useAccount } from "wagmi";
+import { Header } from "~~/components/Header";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { notification } from "~~/utils/scaffold-eth";
+
+const requestsPerUsdc = 200000; // 200,000 requests per 1 USDC
 
 const Home: NextPage = () => {
+  // const router = useRouter();
+  const { address } = useAccount();
+  const [totalRequestsFunded, setTotalRequestsFunded] = useState<number | string>("...");
+  const [searchInput, setSearchInput] = useState("");
+  const [displayUrls, setDisplayUrls] = useState<string[]>([]);
+  const [urlRequestsRemaining, setUrlRequestsRemaining] = useState<Record<string, number>>({});
+  const [urlRequestsTotal, setUrlRequestsTotal] = useState<Record<string, number>>({});
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  const firebaseCollection = process.env.NEXT_PUBLIC_FIREBASE_COLLECTION;
+
+  const { writeContractAsync: writeUsdcAsync } = useScaffoldWriteContract("USDC");
+
+  // Hardcoded bank address
+  const bankAddress = "0x8c4f1FB34565650e176d2cd2761B3be10Ca8d35b";
+
+  // Reduce polling frequency for contract reads
+  const { data: yourTokenSymbol } = useScaffoldReadContract({
+    contractName: "USDC",
+    functionName: "symbol",
+    watch: false, // Disable automatic polling
+  });
+
+  // Reduce polling frequency for contract reads
+  const { data: yourUsdcBalance, refetch: refetchUsdcBalance } = useScaffoldReadContract({
+    contractName: "USDC",
+    functionName: "balanceOf",
+    args: [address],
+    watch: false, // Disable automatic polling
+  });
+
+  const formatRequestsRemaining = (count: number): string => {
+    if (count >= 1_000_000) {
+      return `${Math.floor(count / 100_000) / 10}M`.replace(".0M", "M");
+    } else if (count >= 1_000) {
+      return `${Math.floor(count / 100) / 10}k`.replace(".0k", "k");
+    }
+    return count.toString();
+  };
+
+  // Load available URLs from Firebase
+  const fetchUserData = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/firebase/url-list?collection=${firebaseCollection}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch URL list");
+      }
+
+      const data = await response.json();
+      setDisplayUrls(data.urls || []);
+      setUrlRequestsRemaining(data.urlRequestsRemaining || {});
+      setUrlRequestsTotal(data.urlRequestsTotal || {});
+    } catch (e) {
+      console.error("Error loading URL list:", e);
+      if (e instanceof Error) {
+        console.error("Error name:", e.name);
+        console.error("Error message:", e.message);
+      }
+      // Set empty state on error
+      setDisplayUrls([]);
+      setUrlRequestsRemaining({});
+      setUrlRequestsTotal({});
+    } finally {
+      // Only set initial loading to false, never set it back to true
+      setIsInitialLoading(false);
+    }
+  }, [firebaseCollection]);
+
+  useEffect(() => {
+    const fetchTotalRequests = async () => {
+      if (!firebaseCollection) {
+        console.error("Firebase collection name is not defined");
+        return;
+      }
+      try {
+        const response = await fetch(`/api/firebase/request-count?collection=${firebaseCollection}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch request count");
+        }
+        const data = await response.json();
+        setTotalRequestsFunded(data.totalFundedRequests || 0);
+      } catch (error) {
+        console.error("Error fetching total requests:", error);
+      }
+    };
+
+    fetchTotalRequests();
+    fetchUserData();
+  }, [firebaseCollection, fetchUserData]);
+
+  // Poll for updates every 10 seconds
+  useInterval(fetchUserData, 10000);
+  useInterval(refetchUsdcBalance, 10000);
+
   return (
-    <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10">
-      {/* Header with fixed logo */}
-      <header className="container mx-auto md:pb-24 lg:pb-28 border-l border-r border-black md:mt-0">
-        <div className="fixed container mt-4 xs:mt-0 md:mt-0 z-10 md:p-6 lg:p-8">
-          <Image className="w-40" src="rpc-logo.svg" alt="logo" width={260} height={78} />
-        </div>
-      </header>
+    <div className="container mx-auto px-0 sm:px-6 md:px-8 lg:px-10">
+      <Header />
 
       {/* First row */}
-      <div className="flex flex-col lg:flex-row lg:border-x-[1px] mt-20 md:mt-0 lg:border-y-[1px] border-black">
+      <div className="flex flex-col lg:flex-row lg:border-x lg:border-b mt-0 border-black">
         {/* Introduction section */}
-        <section className="bg-[#DDDDDD] p-6 lg:p-10 w-full lg:w-[60vw] border-x-[1px] border-y-[1px] border-black lg:border-none">
+        <section className="bg-[#DDDDDD] p-6 lg:p-10 w-full lg:w-[60vw] border-x-[1px] border-b-[1px] border-black lg:border-none">
           <div className="flex flex-col">
-            <p className="mt-0">A distributed Ethereum RPC operated by a network of BuidlGuidl clients.</p>
+            <p className="mt-0">
+              A distributed Mainnet Ethereum RPC operated by a network of{" "}
+              <a
+                href="https://client.buidlguidl.com/"
+                target="_blank"
+                rel="noreferrer"
+                className="link hover:text-black cursor-pointer"
+              >
+                BuidlGuidl Clients
+              </a>
+              .
+            </p>
 
             <div className="bg-black p-2 lg:p-4 text-white text-sm">
               <p className="m-2">https://mainnet.rpc.buidlguidl.com</p>
@@ -29,14 +140,18 @@ const Home: NextPage = () => {
         {/* Second row for mobile - flex row to make sections share the row */}
         <div className="flex flex-col flex-1">
           {/* Satellite section */}
-          <section className="bg-[#20F658] p-6 flex justify-center items-center border-r-[1px] border-l-[1px] border-b-[1px] border-black lg:border-r-0 flex-1">
-            <Image
-              src="/satellite-10fps.gif"
-              alt="satellite"
-              className="object-contain max-h-full"
-              width={436}
-              height={535}
-            />
+          <section className="bg-[#20F658] p-6 lg:p-6 flex justify-center items-center border-r-[1px] border-l-[1px] border-b-[1px] border-black lg:border-r-0 flex-1 lg:min-w-[436px] max-h-[300px] lg:max-h-none">
+            <div className="relative w-full h-full flex justify-center items-center" style={{ aspectRatio: "436/535" }}>
+              <Image
+                src="/satellite-10fps.gif"
+                alt="satellite"
+                className="object-contain max-h-[250px] lg:max-h-full"
+                width={436}
+                height={535}
+                priority
+                sizes="(max-width: 1024px) 250px, 535px"
+              />
+            </div>
           </section>
 
           {/* Button section */}
@@ -48,6 +163,168 @@ const Home: NextPage = () => {
               <p>Visit Client site</p>
             </button>
           </section>
+        </div>
+      </div>
+
+      {/* Second row */}
+      <div className="flex flex-col lg:flex-row lg:border-x lg:border-b mt-0 border-black">
+        {/* Second row for mobile - flex row to make sections share the row */}
+        <div className="flex flex-col flex-1">
+          {/* Satellite section */}
+          <section className="bg-[#20F658] p-6 flex justify-center items-center border-l-[1px] lg:border-l-[0px] border-r-[1px] lg:border-r-[1px] border-black flex-1">
+            <div className="flex flex-col items-center min-w-[300px]">
+              <span className="font-bold">Total Requests Funded</span>
+              <span className="font-bold text-2xl mt-2">
+                {typeof totalRequestsFunded === "number" ? totalRequestsFunded.toLocaleString() : totalRequestsFunded}
+              </span>
+            </div>
+          </section>
+        </div>
+
+        {/* Introduction section */}
+        <section className="bg-black text-white p-6 lg:p-10 w-full lg:w-[60vw] border-x-[1px] border-y-[1px] border-black lg:border-none">
+          <div className="flex flex-col">
+            <ConnectButton.Custom>
+              {({ account, chain, openConnectModal, mounted }) => {
+                const connected = mounted && account && chain;
+
+                return (
+                  <p className="mt-0">
+                    Feeling generous? Donate USDC to fund BuidlGuidl RPC requests. 1 USDC will pay for 200,000 requests.
+                    {!connected && (
+                      <>
+                        {" "}
+                        <button onClick={openConnectModal} className="underline hover:text-white cursor-pointer">
+                          Connect your wallet to donate requests.
+                        </button>
+                      </>
+                    )}
+                  </p>
+                );
+              }}
+            </ConnectButton.Custom>
+          </div>
+        </section>
+      </div>
+
+      {/* Fund URLs Section */}
+      <div className="flex flex-col items-center bg-base-100 border-x-[1px] border-b-[1px] border-black rounded-none py-6 pt-8 w-full relative">
+        <div className="w-full">
+          <div className="flex flex-col items-center w-full">
+            <span className="font-bold text-xl">Fund URLs</span>
+            <div className="flex items-center justify-center font-bold mt-2">
+              {address ? (
+                <>
+                  <span className="mr-2">Your USDC Balance:</span>
+                  <span>
+                    {yourUsdcBalance !== undefined ? Number(formatUnits(yourUsdcBalance, 6)).toFixed(2) : "..."}
+                  </span>
+                  <span className="ml-1">{yourTokenSymbol}</span>
+                </>
+              ) : (
+                <span>&nbsp;</span>
+              )}
+            </div>
+          </div>
+          <div className="m-4">
+            <input
+              type="text"
+              placeholder="Search URLs..."
+              className="input input-bordered w-full border-black border-1 rounded-none focus:border-black focus:outline-none"
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+            />
+          </div>
+          <div className="border-t border-[#DDDDDD] mx-4"></div>
+          <div className="space-y-4 border-l border-r border-base-300 rounded-none p-4">
+            {isInitialLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <span className="text-lg">Loading...</span>
+              </div>
+            ) : (
+              displayUrls
+                .filter(url => url.toLowerCase().includes(searchInput.toLowerCase()))
+                .sort((a, b) => (urlRequestsTotal[b] || 0) - (urlRequestsTotal[a] || 0))
+                .map(url => (
+                  <div
+                    key={url}
+                    className="flex items-center justify-between pb-4 border-b border-[#DDDDDD] last:border-b-0 last:pb-0"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="mb-1 break-words overflow-wrap-anywhere">{url}</div>
+                      <div className="text-sm text-gray-500">
+                        Requests Total:
+                        <span className="hidden sm:inline">{(urlRequestsTotal[url] || 0).toLocaleString()}</span>
+                        <span className="sm:hidden">{formatRequestsRemaining(urlRequestsTotal[url] || 0)}</span>
+                        {" | Remaining Funded:"}
+                        <span className="hidden sm:inline">{(urlRequestsRemaining[url] || 0).toLocaleString()}</span>
+                        <span className="sm:hidden">{formatRequestsRemaining(urlRequestsRemaining[url] || 0)}</span>
+                      </div>
+                    </div>
+                    <button
+                      className={`btn btn-primary btn-sm border-black hover:border-black rounded-none ml-4 tooltip tooltip-left [&[data-tip]]:before:bg-black [&[data-tip]]:before:text-white [&[data-tip]]:before:transition-all [&[data-tip]]:before:duration-150 transition-colors ${
+                        !address ? "!bg-white text-gray-500 cursor-not-allowed" : "bg-white hover:bg-[#FF66F9]"
+                      }`}
+                      data-tip="200,000 requests"
+                      disabled={!address}
+                      onClick={async () => {
+                        try {
+                          const requiredAmount = 1000000n; // 1 USDC (6 decimals)
+
+                          // Check if user has enough USDC balance
+                          if (!yourUsdcBalance || yourUsdcBalance < requiredAmount) {
+                            notification.error(
+                              "Insufficient USDC balance. Please ensure you have at least 1 USDC in your wallet.",
+                            );
+                            return;
+                          }
+
+                          // Proceed with transfer
+                          await writeUsdcAsync({
+                            functionName: "transfer",
+                            args: [bankAddress, requiredAmount],
+                          });
+
+                          // Update Firebase with new funded requests count for this specific URL
+                          const requestsToAdd = (Number(requiredAmount) * requestsPerUsdc) / 1000000; // Convert USDC to funded requests
+
+                          const updateResponse = await fetch(
+                            `/api/firebase/url-list?collection=${firebaseCollection}`,
+                            {
+                              method: "POST",
+                              headers: {
+                                "Content-Type": "application/json",
+                              },
+                              body: JSON.stringify({
+                                url,
+                                requestsToAdd,
+                              }),
+                            },
+                          );
+
+                          if (!updateResponse.ok) {
+                            throw new Error("Failed to update URL requests");
+                          }
+
+                          // Update the local state to reflect the new total
+                          setUrlRequestsRemaining(prev => ({
+                            ...prev,
+                            [url]: prev[url] + requestsToAdd,
+                          }));
+                        } catch (err) {
+                          console.error("Error in fund transfer:", err);
+                          if (err instanceof Error) {
+                            notification.error(err.message);
+                          }
+                        }
+                      }}
+                    >
+                      Fund 1 USDC
+                    </button>
+                  </div>
+                ))
+            )}
+          </div>
         </div>
       </div>
     </div>

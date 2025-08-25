@@ -31,9 +31,9 @@ export const RainbowKitCustomConnectButton = () => {
             {(() => {
               if (!connected) {
                 return (
-                  <div className="mr-0 md:mr-16 lg:mr-20">
+                  <div className="mr-0">
                     <button
-                      className="btn bg-[#FF66F9] border-1px border-black hover:bg-white hover:border-black btn-sm md:btn-md !rounded-none"
+                      className="btn bg-white border-1px border-black hover:bg-[#FF66F9] hover:border-black btn-sm md:btn-md !rounded-none"
                       onClick={openConnectModal}
                       type="button"
                     >
@@ -49,18 +49,20 @@ export const RainbowKitCustomConnectButton = () => {
 
               return (
                 <>
-                  <div className="flex flex-col items-center mr-1">
-                    <Balance address={account.address as Address} className="min-h-0 h-auto" />
-                    <span className="text-xs" style={{ color: networkColor }}>
-                      {chain.name}
-                    </span>
+                  <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center mb-2">
+                      <Balance address={account.address as Address} className="min-h-0 h-auto" />
+                      <span className="text-xs" style={{ color: networkColor }}>
+                        {chain.name}
+                      </span>
+                    </div>
+                    <AddressInfoDropdown
+                      address={account.address as Address}
+                      displayName={account.displayName}
+                      ensAvatar={account.ensAvatar}
+                      blockExplorerAddressLink={blockExplorerAddressLink}
+                    />
                   </div>
-                  <AddressInfoDropdown
-                    address={account.address as Address}
-                    displayName={account.displayName}
-                    ensAvatar={account.ensAvatar}
-                    blockExplorerAddressLink={blockExplorerAddressLink}
-                  />
                   <AddressQRCodeModal address={account.address as Address} modalId="qrcode-modal" />
                 </>
               );
