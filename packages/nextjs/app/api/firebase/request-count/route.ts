@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "../../../../lib/firebase-admin";
+import { getAdminDb } from "../../../../lib/firebase-admin";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Collection parameter is required" }, { status: 400 });
     }
 
-    const docRef = adminDb.collection(collection).doc("requestCount");
+    const docRef = getAdminDb().collection(collection).doc("requestCount");
     const docSnap = await docRef.get();
 
     if (!docSnap.exists) {

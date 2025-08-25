@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "../../../../lib/firebase-admin";
+import { getAdminDb } from "../../../../lib/firebase-admin";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Collection parameter is required" }, { status: 400 });
     }
 
-    const docRef = adminDb.collection(collection).doc("urlList");
+    const docRef = getAdminDb().collection(collection).doc("urlList");
     const docSnap = await docRef.get();
 
     if (!docSnap.exists) {
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "URL and requestsToAdd are required" }, { status: 400 });
     }
 
-    const urlListRef = adminDb.collection(collection).doc("urlList");
+    const urlListRef = getAdminDb().collection(collection).doc("urlList");
 
     // Get current data
     const urlListSnap = await urlListRef.get();
