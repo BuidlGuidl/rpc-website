@@ -1,4 +1,10 @@
+import { config } from "dotenv";
 import type { NextConfig } from "next";
+import { resolve } from "path";
+
+// Load environment variables from project root for build time
+const projectRoot = resolve(process.cwd(), "../..");
+config({ path: resolve(projectRoot, ".env") });
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -8,6 +14,9 @@ const nextConfig: NextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: process.env.NEXT_PUBLIC_IGNORE_BUILD_ERROR === "true",
+  },
+  env: {
+    NEXT_PUBLIC_FIREBASE_COLLECTION: process.env.NEXT_PUBLIC_FIREBASE_COLLECTION,
   },
   webpack: config => {
     config.resolve.fallback = { fs: false, net: false, tls: false };

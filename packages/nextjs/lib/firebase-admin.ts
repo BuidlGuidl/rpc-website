@@ -1,4 +1,13 @@
+import { config } from "dotenv";
 import * as admin from "firebase-admin";
+import { resolve } from "path";
+
+// Load environment variables from .env file for local development
+if (process.env.NODE_ENV !== "production") {
+  // Look for .env files in the project root (two levels up from packages/nextjs)
+  const projectRoot = resolve(process.cwd(), "../..");
+  config({ path: resolve(projectRoot, ".env") });
+}
 
 // Helper function to properly format the private key
 function formatPrivateKey(privateKey: string | undefined): string | undefined {
