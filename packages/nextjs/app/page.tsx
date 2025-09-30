@@ -9,6 +9,7 @@ import { useInterval } from "usehooks-ts";
 import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
 import { Header } from "~~/components/Header";
+import RpcStatsCharts from "~~/components/RpcStatsCharts";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
@@ -133,6 +134,11 @@ const Home: NextPage = () => {
 
             <div className="bg-black p-2 lg:p-4 text-white text-sm">
               <p className="m-2">https://mainnet.rpc.buidlguidl.com</p>
+            </div>
+
+            {/* RPC Stats Pie Charts */}
+            <div className="mt-6">
+              <RpcStatsCharts />
             </div>
           </div>
         </section>
