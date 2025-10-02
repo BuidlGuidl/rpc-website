@@ -9,6 +9,11 @@ interface RpcStats {
   consensusClients: Record<string, number>;
 }
 
+// Custom color palettes
+const executionClientsPalette = ["#D0DAFD", "#87A0F9", "#3E66F5"];
+
+const consensusClientsPalette = ["#B1FCC4", "#6CF991", "#27F65E"];
+
 const RpcStatsCharts = () => {
   const [stats, setStats] = useState<RpcStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,11 +51,7 @@ const RpcStatsCharts = () => {
   }
 
   if (error || !stats) {
-    return (
-      <div className="flex flex-col items-center space-y-4 p-4">
-        <div className="text-sm text-red-600">Error loading RPC stats: {error}</div>
-      </div>
-    );
+    return null;
   }
 
   // Don't render anything if no nodes are online
@@ -90,6 +91,10 @@ const RpcStatsCharts = () => {
             ]}
             width={200}
             height={150}
+            slots={{
+              legend: () => null,
+            }}
+            colors={executionClientsPalette}
           />
         </div>
 
@@ -104,6 +109,10 @@ const RpcStatsCharts = () => {
             ]}
             width={200}
             height={150}
+            slots={{
+              legend: () => null,
+            }}
+            colors={consensusClientsPalette}
           />
         </div>
       </div>
