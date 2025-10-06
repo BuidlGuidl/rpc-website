@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Gauge } from "@mui/x-charts/Gauge";
 import { PieChart } from "@mui/x-charts/PieChart";
 
 interface RpcStats {
@@ -75,8 +76,22 @@ const RpcStatsCharts = () => {
 
   return (
     <div className="flex flex-col space-y-6 p-4">
-      <div className="text-center">
-        <div className="text-sm font-medium mb-2">Nodes Online: {stats.nodesOnline}</div>
+      <div className="flex flex-col items-center mb-4">
+        <h3 className="text-sm font-medium mb-2">Nodes Online</h3>
+        <Gauge
+          value={stats.nodesOnline}
+          valueMax={Math.max(30, stats.nodesOnline)}
+          startAngle={-90}
+          endAngle={90}
+          width={200}
+          height={120}
+          text={({ value }) => `${value}`}
+          sx={{
+            "& .MuiGauge-valueArc": {
+              fill: "#3E66F5",
+            },
+          }}
+        />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 justify-center items-center">
