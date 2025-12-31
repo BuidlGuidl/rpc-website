@@ -146,10 +146,10 @@ const Home: NextPage = () => {
         {/* Second row for mobile - flex row to make sections share the row */}
         <div className="flex flex-col flex-1">
           {/* Satellite section */}
-          <section className="bg-[#39E9CE] p-6 lg:p-6 flex justify-center items-center border-r-[1px] border-l-[1px] border-b-[1px] border-black lg:border-r-0 flex-1 lg:min-w-[436px] max-h-[300px] lg:max-h-none">
+          <section className="bg-[#20F658] p-6 lg:p-6 flex justify-center items-center border-r-[1px] border-l-[1px] border-b-[1px] border-black lg:border-r-0 flex-1 lg:min-w-[436px] max-h-[300px] lg:max-h-none">
             <div className="relative w-full h-full flex justify-center items-center" style={{ aspectRatio: "436/535" }}>
               <Image
-                src="/sat_green_xmas.gif"
+                src="/satellite-10fps.gif"
                 alt="satellite"
                 className="object-contain max-h-[250px] lg:max-h-full"
                 width={436}
